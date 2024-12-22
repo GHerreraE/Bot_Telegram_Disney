@@ -1,0 +1,5 @@
+start cmd
+btn obtener_codigo
+btn cancel
+btn help
+btn volver_menu
