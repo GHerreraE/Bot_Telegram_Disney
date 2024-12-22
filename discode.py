@@ -75,7 +75,11 @@ with open('admin_id.txt', 'r') as f:
     ADMIN_ID = int(f.read().strip())
 
 # Carga el archivo con credenciales IMAP (col: "Correo", "IMAP")
-df = pd.read_excel('dis.xlsx')
+# Asegúrate de que en 'correos.xlsx' tengas al menos estas columnas:
+# "Correo" -> la dirección (ej: usuario@outlook.com)
+# "IMAP"   -> el servidor IMAP (ej: outlook.office365.com)
+# "Pass"   -> la contraseña o token de aplicación (puede tener otro nombre)
+df = pd.read_excel('correos.xlsx')
 
 # Archivo para controlar accesos de usuarios
 USERS_FILE = 'usuarios.xlsx'
@@ -123,14 +127,27 @@ def user_has_access(user_id: int, email_address: str) -> bool:
     return email_address.lower() in allowed_emails
 
 
-def get_imap_password(email_address: str):
+def get_credentials(email_address: str):
     """
-    Retorna la contraseña IMAP para el correo, o None si no existe en dis.xlsx.
+    Retorna una tupla (imap_server, password) para el correo dado,
+    o (None, None) si no existe en correos.xlsx.
     """
     user_data = df[df['Correo'].str.lower() == email_address.lower()]
     if user_data.empty:
-        return None
-    return user_data['IMAP'].values[0]
+        return None, None
+    
+    # Asumiendo que tus columnas son "IMAP" y "Pass" (ajusta según tu correos.xlsx)
+    imap_server = user_data['IMAP'].values[0]
+    app_password = None
+    if 'Pass' in user_data.columns:
+        app_password = user_data['Pass'].values[0]
+    else:
+        # Si la contraseña seguía estando en la columna "IMAP" por compatibilidad
+        # coméntalo y usa la que corresponda
+        # app_password = user_data['IMAP'].values[0]
+        pass
+    
+    return imap_server, app_password
 
 
 def get_verification_code(email_address: str, imap_server: str, app_password: str):
@@ -149,7 +166,7 @@ def get_verification_code(email_address: str, imap_server: str, app_password: st
             None,
             '(OR FROM "disneyplus@mail.disneyplus.com" FROM "disneyplus@mail2.disneyplus.com")'
         )
-        if not messages[0]:
+        if not messages or not messages[0]:
             return None, None
 
         email_ids = messages[0].split()
@@ -353,10 +370,10 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['awaiting_email'] = False
             return
 
-        # Obtén la contraseña IMAP
-        app_password = get_imap_password(email_address)
-        if not app_password:
-            user_log(user_id, "Correo no encontrado en el sistema.")
+        # Obtén servidor IMAP y contraseña
+        imap_server, app_password = get_credentials(email_address)
+        if not imap_server or not app_password:
+            user_log(user_id, f"Correo '{email_address}' no encontrado o sin credenciales.")
             keyboard = [
                 [
                     InlineKeyboardButton("Reintentar", callback_data="cambiar_correo"),
@@ -366,7 +383,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             await update.message.reply_text(
-                "⚠️ **Correo no encontrado en el sistema.**",
+                "⚠️ **Correo no encontrado o credenciales incompletas en el sistema.**",
                 parse_mode="Markdown",
                 reply_markup=reply_markup
             )
@@ -378,7 +395,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
-        code, minutes = get_verification_code(email_address, 'imap.gmail.com', app_password)
+        code, minutes = get_verification_code(email_address, imap_server, app_password)
         if code:
             user_log(user_id, f"Código obtenido: {code} (hace {minutes} minutos).")
             await update.message.reply_text(
@@ -590,7 +607,7 @@ if __name__ == "__main__":
 
     # Obtenemos el logger raíz
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)  # Cambia a INFO/DEBUG según requieras
+    logger.setLevel(logging.DEBUG)  # Cambia a INFO/DEBUG según tu preferencia
     logger.addHandler(console_handler)
 
     # Construimos la aplicación
