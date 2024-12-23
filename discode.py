@@ -1,3 +1,10 @@
+# =============================================================================
+# Nombre del Proyecto: Telegram Verification Code Bot
+# Autor: Don Marcial
+# Fecha de Creación: 2024/Diciembre
+# Última Actualización: 23/12/2024
+# Versión: 3.0 (Implementation privateemail.com + /add dic)
+# =============================================================================
 import os
 import socket
 import imaplib
