@@ -26,9 +26,28 @@ from telegram.ext import (
     ContextTypes
 )
 
+# =============================================================================
+# 1. Configuración global y Diccionario de Dominios
+# =============================================================================
+
+# Diccionario de dominios, para autocompletar IMAP y contraseña si NO existe en 'correos.xlsx'
+DEFAULT_DOMAINS = {
+    # Ejemplo:
+    "midominio.com": {
+        "imap": "mail.privateemail.com",
+        "pass": "LaMismaContraseñaParaTodos"
+    },
+
+    
+    # Puedes agregar más dominios aquí:
+    # "otradomain.com": {
+    #     "imap": "mail.privateemail.com",
+    #     "pass": "ContraseñaDelOtroDominio"
+    # }
+}
 
 # =============================================================================
-# 1. Configuración de color en logs
+# 2. Configuración de color en logs
 # =============================================================================
 
 class ColorfulFormatter(logging.Formatter):
@@ -50,7 +69,7 @@ class ColorfulFormatter(logging.Formatter):
 
 
 # =============================================================================
-# 2. Carpeta de logs por usuario
+# 3. Carpeta de logs por usuario
 # =============================================================================
 
 LOGS_FOLDER = "logs"
@@ -67,11 +86,11 @@ def user_log(user_id: int, message: str):
 
 
 # =============================================================================
-# 3. Cargar datos y configuraciones
+# 4. Cargar datos y configuraciones
 # =============================================================================
 
 # Lee el ID del admin desde un archivo
-with open('admin_id.txt', 'r') as f:
+with open('admin_id.txt', 'r', encoding='utf-8') as f:
     ADMIN_ID = int(f.read().strip())
 
 # Carga el archivo con credenciales IMAP (col: "Correo", "IMAP", "Pass")
@@ -83,7 +102,7 @@ def load_users():
     try:
         df_users = pd.read_excel(USERS_FILE)
         if not {'UserID', 'Emails'}.issubset(df_users.columns):
-            raise ValueError(f"El archivo {USERS_FILE} no contiene las columnas necesarias.")
+            raise ValueError(f"El archivo {USERS_FILE} no contiene las columnas necesarias (UserID, Emails).")
         return df_users
     except FileNotFoundError:
         df_users = pd.DataFrame(columns=['UserID', 'Emails'])
@@ -94,12 +113,12 @@ def save_users(df_users):
     df_users.to_excel(USERS_FILE, index=False)
 
 # Lee el token del bot
-with open('token.txt', 'r') as token_file:
+with open('token.txt', 'r', encoding='utf-8') as token_file:
     TELEGRAM_BOT_TOKEN = token_file.read().strip()
 
 
 # =============================================================================
-# 4. Funciones auxiliares
+# 5. Funciones auxiliares
 # =============================================================================
 
 def autodetect_imap_server(email_address: str) -> str:
@@ -109,7 +128,7 @@ def autodetect_imap_server(email_address: str) -> str:
     """
     domain = email_address.split("@")[-1].lower()
 
-    # Regla para PrivateEmail (Namecheap)
+    # Si contuviera 'privateemail.com', por ejemplo:
     if "privateemail.com" in domain:
         return "mail.privateemail.com"
 
@@ -118,7 +137,7 @@ def autodetect_imap_server(email_address: str) -> str:
 
 
 # =============================================================================
-# 5. Lógica para credenciales e IMAP
+# 6. Lógica para credenciales e IMAP
 # =============================================================================
 
 def user_has_access(user_id: int, email_address: str) -> bool:
@@ -144,28 +163,48 @@ def user_has_access(user_id: int, email_address: str) -> bool:
 
 def get_credentials(email_address: str):
     """
-    Retorna una tupla (imap_server, password) para el correo dado,
-    o (None, None) si no existe en correos.xlsx y tampoco se puede deducir.
+    Retorna una tupla (imap_server, password).
+    - Si el correo existe en 'df', toma esos valores de IMAP, Pass.
+    - Si NO existe, revisa DEFAULT_DOMAINS. Si coincide, crea la fila en 'df' y en 'correos.xlsx'.
+    - Si no coincide, autodetecta IMAP y pasa password=None.
     """
-    user_data = df[df['Correo'].str.lower() == email_address.lower()]
+    global df  # Para poder actualizar el DataFrame si creamos una nueva fila
+    email_lower = email_address.lower()
 
-    # Si el correo aparece en el DataFrame
+    # 1) Ver si ya existe en correos.xlsx
+    user_data = df[df['Correo'].str.lower() == email_lower]
     if not user_data.empty:
+        # Ya existe
         imap_server = user_data['IMAP'].values[0] if 'IMAP' in user_data.columns else None
         app_password = user_data['Pass'].values[0] if 'Pass' in user_data.columns else None
-        
-        # Si no hay IMAP en la fila, intentamos autodetectar
+
+        # Si no hay IMAP, intentamos autodetectar
         if pd.isna(imap_server) or not imap_server:
-            imap_server = autodetect_imap_server(email_address)
+            imap_server = autodetect_imap_server(email_lower)
 
         return imap_server, app_password
-
     else:
-        # Si no existe en correos.xlsx, intentamos deducir
-        imap_server = autodetect_imap_server(email_address)
-        # Sin una contraseña conocida, devolvemos None
-        app_password = None
-        return imap_server, app_password
+        # 2) No está en 'df'. Revisamos si el dominio está en DEFAULT_DOMAINS
+        domain = email_lower.split("@")[-1]
+        if domain in DEFAULT_DOMAINS:
+            imap_server = DEFAULT_DOMAINS[domain]['imap']
+            app_password = DEFAULT_DOMAINS[domain]['pass']
+
+            # Creamos la fila en 'df'
+            new_row = {
+                'Correo': email_lower,
+                'IMAP': imap_server,
+                'Pass': app_password
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel('correos.xlsx', index=False)
+
+            return imap_server, app_password
+        else:
+            # 3) Fallback: autodetectar IMAP y pass=None
+            imap_server = autodetect_imap_server(email_lower)
+            app_password = None
+            return imap_server, app_password
 
 
 def get_verification_code(email_address: str, imap_server: str, app_password: str):
@@ -175,7 +214,7 @@ def get_verification_code(email_address: str, imap_server: str, app_password: st
     """
     socket.setdefaulttimeout(10)  # time-out de 10 segundos
 
-    # Si no hay contraseña, salimos
+    # Si no hay contraseña, no podremos iniciar sesión
     if not app_password:
         logging.error(f"No se proporcionó contraseña para {email_address}.")
         return None, None
@@ -252,7 +291,7 @@ def get_verification_code(email_address: str, imap_server: str, app_password: st
 
 
 # =============================================================================
-# 6. Handlers de comandos y mensajes
+# 7. Handlers de comandos y mensajes
 # =============================================================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -390,10 +429,10 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['awaiting_email'] = False
             return
 
-        # Obtén servidor IMAP y contraseña
+        # Obtiene (o crea) las credenciales
         imap_server, app_password = get_credentials(email_address)
         if not imap_server or not app_password:
-            user_log(user_id, f"Correo '{email_address}' no encontrado o sin credenciales completas.")
+            user_log(user_id, f"Correo '{email_address}' sin credenciales completas (IMAP={imap_server}, Pass={app_password}).")
             keyboard = [
                 [
                     InlineKeyboardButton("Reintentar", callback_data="cambiar_correo"),
@@ -462,7 +501,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # =============================================================================
-# 7. Comandos de administración y utilidad
+# 8. Comandos de administración y utilidad
 # =============================================================================
 
 async def mi_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -609,7 +648,7 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # =============================================================================
-# 8. Main / Ejecución del bot
+# 9. Main / Ejecución del bot
 # =============================================================================
 
 if __name__ == "__main__":
