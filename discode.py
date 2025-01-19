@@ -1,15 +1,15 @@
 # =============================================================================
-# Nombre del Proyecto: Telegram Verification Code Bot
+# Nombre del Proyecto: Telegram Verification Code Bot (Múltiples Admins)
 # Autor: Don Marcial
 # Fecha de Creación: 2024/Diciembre
-# Última Actualización: 23/12/2024
-# Versión: 3.0 (Implementation privateemail.com + /add dic)
+# Última Actualización: 2025/Enero
+# Versión: 4.1 (Soporte Múltiples Admins + /help + WhatsApp en la ayuda)
 # =============================================================================
+
 import os
 import socket
 import imaplib
 import email
-from email.header import decode_header
 import re
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -34,27 +34,60 @@ from telegram.ext import (
 )
 
 # =============================================================================
-# 1. Configuración global y Diccionario de Dominios
+# 1. Configuración global
 # =============================================================================
 
-# Diccionario de dominios, para autocompletar IMAP y contraseña si NO existe en 'correos.xlsx'
-DEFAULT_DOMAINS = {
-    # Ejemplo:
-    "midominio.com": {
-        "imap": "mail.privateemail.com",
-        "pass": "LaMismaContraseñaParaTodos"
-    },
+# --- Credenciales de la cuenta principal IMAP (admin@dmarcial.com) ---
+ADMIN_IMAP_SERVER = "mail.privateemail.com"
+ADMIN_EMAIL = "admin@dmarcial.com"
 
-    
-    # Puedes agregar más dominios aquí:
-    # "otradomain.com": {
-    #     "imap": "mail.privateemail.com",
-    #     "pass": "ContraseñaDelOtroDominio"
-    # }
-}
+# Lee la contraseña (app password) desde un archivo
+with open('admin_imap_pass.txt', 'r', encoding='utf-8') as f:
+    ADMIN_EMAIL_PASSWORD = f.read().strip()
+
+# Lee la lista de administradores desde admin_ids.txt
+def load_admin_ids(filename='admin_ids.txt'):
+    admin_ids = []
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line.isdigit():
+                    admin_ids.append(int(line))
+    except FileNotFoundError:
+        pass
+    return admin_ids
+
+ADMIN_IDS = load_admin_ids()
+
+def is_admin(user_id: int) -> bool:
+    """
+    Retorna True si el user_id está en la lista de administradores.
+    """
+    return user_id in ADMIN_IDS
+
+# Archivo de usuarios autorizados
+USERS_FILE = 'usuarios.xlsx'
+
+# Carpeta de logs
+LOGS_FOLDER = "logs"
+if not os.path.exists(LOGS_FOLDER):
+    os.makedirs(LOGS_FOLDER)
+
+# Lee el token del bot
+with open('token.txt', 'r', encoding='utf-8') as token_file:
+    TELEGRAM_BOT_TOKEN = token_file.read().strip()
+
+# Texto de ayuda (para botón de Ayuda y comando /help)
+HELP_TEXT = (
+    "Este bot te ayuda a obtener códigos de verificación enviados a tu correo.\n\n"
+    "1. **Escribe el correo** cuando se te pida.\n"
+    "2. **El bot buscará el correo más reciente** enviado a esa dirección.\n\n"
+    "Si necesitas ayuda adicional, contáctanos por WhatsApp: +34624090880."
+)
 
 # =============================================================================
-# 2. Configuración de color en logs
+# 2. Log con colores
 # =============================================================================
 
 class ColorfulFormatter(logging.Formatter):
@@ -75,41 +108,31 @@ class ColorfulFormatter(logging.Formatter):
         return f"{log_color}{message}{Style.RESET_ALL}"
 
 
-# =============================================================================
-# 3. Carpeta de logs por usuario
-# =============================================================================
-
-LOGS_FOLDER = "logs"
-if not os.path.exists(LOGS_FOLDER):
-    os.makedirs(LOGS_FOLDER)
-
 def user_log(user_id: int, message: str):
     """
     Registra un mensaje en logs/<user_id>.txt
     """
     log_file = os.path.join(LOGS_FOLDER, f"{user_id}.txt")
-    with open(log_file, "a", encoding="utf-8") as f:
+    with open(log_file, "a", encoding='utf-8') as f:
         f.write(message + "\n")
 
 
 # =============================================================================
-# 4. Cargar datos y configuraciones
+# 3. Funciones de carga y guardado de usuarios
 # =============================================================================
 
-# Lee el ID del admin desde un archivo
-with open('admin_id.txt', 'r', encoding='utf-8') as f:
-    ADMIN_ID = int(f.read().strip())
-
-# Carga el archivo con credenciales IMAP (col: "Correo", "IMAP", "Pass")
-df = pd.read_excel('correos.xlsx')
-
-# Archivo para controlar accesos de usuarios
-USERS_FILE = 'usuarios.xlsx'
 def load_users():
+    """
+    Carga el archivo usuarios.xlsx, que debe tener columnas:
+    - 'UserID' (int)
+    - 'Emails' (str separada por ;)
+    """
     try:
         df_users = pd.read_excel(USERS_FILE)
         if not {'UserID', 'Emails'}.issubset(df_users.columns):
-            raise ValueError(f"El archivo {USERS_FILE} no contiene las columnas necesarias (UserID, Emails).")
+            raise ValueError(
+                f"El archivo {USERS_FILE} no contiene las columnas necesarias (UserID, Emails)."
+            )
         return df_users
     except FileNotFoundError:
         df_users = pd.DataFrame(columns=['UserID', 'Emails'])
@@ -119,44 +142,23 @@ def load_users():
 def save_users(df_users):
     df_users.to_excel(USERS_FILE, index=False)
 
-# Lee el token del bot
-with open('token.txt', 'r', encoding='utf-8') as token_file:
-    TELEGRAM_BOT_TOKEN = token_file.read().strip()
-
 
 # =============================================================================
-# 5. Funciones auxiliares
-# =============================================================================
-
-def autodetect_imap_server(email_address: str) -> str:
-    """
-    Intenta deducir el servidor IMAP según el dominio del email.
-    Ajusta estas reglas a tus necesidades.
-    """
-    domain = email_address.split("@")[-1].lower()
-
-    # Si contuviera 'privateemail.com', por ejemplo:
-    if "privateemail.com" in domain:
-        return "mail.privateemail.com"
-
-    # Fallback genérico: "mail.<dominio>"
-    return f"mail.{domain}"
-
-
-# =============================================================================
-# 6. Lógica para credenciales e IMAP
+# 4. Lógica de permisos y obtención del código
 # =============================================================================
 
 def user_has_access(user_id: int, email_address: str) -> bool:
     """
-    Retorna True si es ADMIN o si user_id tiene permiso para email_address.
+    Verifica si user_id (o cualquier admin) tiene permiso para pedir
+    el código del 'email_address' dado.
     """
-    if user_id == ADMIN_ID:
+    # Si es admin, tiene acceso a cualquier correo
+    if is_admin(user_id):
         return True
 
+    # Si no es admin, revisamos la lista de usuarios
     df_users = load_users()
     row = df_users.loc[df_users['UserID'] == user_id]
-
     if row.empty:
         return False
 
@@ -168,122 +170,68 @@ def user_has_access(user_id: int, email_address: str) -> bool:
     return email_address.lower() in allowed_emails
 
 
-def get_credentials(email_address: str):
+def get_verification_code(requested_email: str):
     """
-    Retorna una tupla (imap_server, password).
-    - Si el correo existe en 'df', toma esos valores de IMAP, Pass.
-    - Si NO existe, revisa DEFAULT_DOMAINS. Si coincide, crea la fila en 'df' y en 'correos.xlsx'.
-    - Si no coincide, autodetecta IMAP y pasa password=None.
-    """
-    global df  # Para poder actualizar el DataFrame si creamos una nueva fila
-    email_lower = email_address.lower()
-
-    # 1) Ver si ya existe en correos.xlsx
-    user_data = df[df['Correo'].str.lower() == email_lower]
-    if not user_data.empty:
-        # Ya existe
-        imap_server = user_data['IMAP'].values[0] if 'IMAP' in user_data.columns else None
-        app_password = user_data['Pass'].values[0] if 'Pass' in user_data.columns else None
-
-        # Si no hay IMAP, intentamos autodetectar
-        if pd.isna(imap_server) or not imap_server:
-            imap_server = autodetect_imap_server(email_lower)
-
-        return imap_server, app_password
-    else:
-        # 2) No está en 'df'. Revisamos si el dominio está en DEFAULT_DOMAINS
-        domain = email_lower.split("@")[-1]
-        if domain in DEFAULT_DOMAINS:
-            imap_server = DEFAULT_DOMAINS[domain]['imap']
-            app_password = DEFAULT_DOMAINS[domain]['pass']
-
-            # Creamos la fila en 'df'
-            new_row = {
-                'Correo': email_lower,
-                'IMAP': imap_server,
-                'Pass': app_password
-            }
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df.to_excel('correos.xlsx', index=False)
-
-            return imap_server, app_password
-        else:
-            # 3) Fallback: autodetectar IMAP y pass=None
-            imap_server = autodetect_imap_server(email_lower)
-            app_password = None
-            return imap_server, app_password
-
-
-def get_verification_code(email_address: str, imap_server: str, app_password: str):
-    """
-    Retorna (code, minutes) si encuentra un código de 6 dígitos en un correo Disney+;
-    De lo contrario (None, None).
+    Obtiene el código de verificación (6 dígitos) del último correo de Disney+
+    enviado a 'requested_email'. Para ello:
+      1. Inicia sesión IMAP usando la cuenta ADMIN_EMAIL / ADMIN_EMAIL_PASSWORD.
+      2. Busca correos de Disney+ (2 posibles remitentes).
+      3. Recorre correos recientes, verificando si el destino es 'requested_email'.
+      4. Extrae y devuelve (code, minutes). Retorna (None, None) si no lo encuentra.
     """
     socket.setdefaulttimeout(10)  # time-out de 10 segundos
 
-    # Si no hay contraseña, no podremos iniciar sesión
-    if not app_password:
-        logging.error(f"No se proporcionó contraseña para {email_address}.")
-        return None, None
-
     try:
-        server = imaplib.IMAP4_SSL(imap_server)
-        server.login(email_address, app_password)
+        server = imaplib.IMAP4_SSL(ADMIN_IMAP_SERVER)
+        server.login(ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD)
         server.select("inbox")
 
+        # Buscar correos con FROM Disney
         status, messages = server.search(
             None,
             '(OR FROM "disneyplus@mail.disneyplus.com" FROM "disneyplus@mail2.disneyplus.com")'
         )
-        if not messages or not messages[0]:
+
+        if status != "OK" or not messages or not messages[0]:
+            server.logout()
             return None, None
 
         email_ids = messages[0].split()
-        latest_email_id = email_ids[-1]
-        status, msg_data = server.fetch(latest_email_id, "(RFC822)")
+        # Recorremos del más reciente al más antiguo
+        for email_id in reversed(email_ids):
+            status_msg, msg_data = server.fetch(email_id, "(RFC822)")
+            if status_msg != "OK":
+                continue
 
-        code = None
-        for response_part in msg_data:
-            if isinstance(response_part, tuple):
-                msg_obj = email.message_from_bytes(response_part[1])
-                date_header = msg_obj["Date"]
-                parsed_date = email.utils.parsedate_to_datetime(date_header).astimezone(timezone.utc)
-                now = datetime.now(timezone.utc)
-                time_diff = now - parsed_date
-                total_minutes = int(time_diff.total_seconds() // 60)
+            for response_part in msg_data:
+                if isinstance(response_part, tuple):
+                    msg_obj = email.message_from_bytes(response_part[1])
+                    # Fecha del correo
+                    date_header = msg_obj["Date"]
+                    parsed_date = email.utils.parsedate_to_datetime(date_header).astimezone(timezone.utc)
+                    now = datetime.now(timezone.utc)
+                    time_diff = now - parsed_date
+                    total_minutes = int(time_diff.total_seconds() // 60)
 
-                if msg_obj.is_multipart():
-                    for part in msg_obj.walk():
-                        content_type = part.get_content_type()
-                        if content_type == "text/html":
-                            html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
-                            soup = BeautifulSoup(html_content, "html.parser")
-                            match = re.search(r'\b\d{6}\b', soup.get_text())
-                            if match:
-                                code = match.group(0)
-                                break
-                        elif content_type == "text/plain":
-                            plain_content = part.get_payload(decode=True).decode("utf-8", errors="ignore")
-                            match = re.search(r'\b\d{6}\b', plain_content)
-                            if match:
-                                code = match.group(0)
-                                break
-                else:
-                    content_type = msg_obj.get_content_type()
-                    payload = msg_obj.get_payload(decode=True).decode("utf-8", errors="ignore")
-                    if content_type == "text/html":
-                        soup = BeautifulSoup(payload, "html.parser")
-                        match = re.search(r'\b\d{6}\b', soup.get_text())
-                        if match:
-                            code = match.group(0)
-                    elif content_type == "text/plain":
-                        match = re.search(r'\b\d{6}\b', payload)
-                        if match:
-                            code = match.group(0)
+                    # Verificar destinatarios
+                    recipients = []
+                    for header_key, header_value in msg_obj.items():
+                        if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
+                            if header_value:
+                                recipients.append(header_value.lower())
 
-                if code:
-                    return code, total_minutes
+                    recipients_str = "\n".join(recipients)
+                    if requested_email.lower() not in recipients_str:
+                        # No coincide con el email buscado
+                        continue
 
+                    # Extraer el código de 6 dígitos
+                    code = extract_6_digit_code(msg_obj)
+                    if code:
+                        server.logout()
+                        return code, total_minutes
+
+        server.logout()
         return None, None
 
     except socket.timeout:
@@ -292,13 +240,46 @@ def get_verification_code(email_address: str, imap_server: str, app_password: st
     except Exception as e:
         logging.error(f"Error al obtener el código de verificación: {e}")
         return None, None
-    finally:
-        if 'server' in locals():
-            server.logout()
+
+
+def extract_6_digit_code(msg_obj) -> str:
+    """
+    Dado un objeto EmailMessage, busca y retorna un código de 6 dígitos
+    en su contenido. Retorna None si no encuentra.
+    """
+    if msg_obj.is_multipart():
+        for part in msg_obj.walk():
+            content_type = part.get_content_type()
+            if content_type == "text/html":
+                html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                text = BeautifulSoup(html_content, "html.parser").get_text()
+                code_match = re.search(r'\b\d{6}\b', text)
+                if code_match:
+                    return code_match.group(0)
+            elif content_type == "text/plain":
+                plain_content = part.get_payload(decode=True).decode("utf-8", errors="ignore")
+                code_match = re.search(r'\b\d{6}\b', plain_content)
+                if code_match:
+                    return code_match.group(0)
+    else:
+        # No es multipart
+        content_type = msg_obj.get_content_type()
+        payload = msg_obj.get_payload(decode=True).decode("utf-8", errors="ignore")
+        if content_type == "text/html":
+            text = BeautifulSoup(payload, "html.parser").get_text()
+            code_match = re.search(r'\b\d{6}\b', text)
+            if code_match:
+                return code_match.group(0)
+        elif content_type == "text/plain":
+            code_match = re.search(r'\b\d{6}\b', payload)
+            if code_match:
+                return code_match.group(0)
+
+    return None
 
 
 # =============================================================================
-# 7. Handlers de comandos y mensajes
+# 5. Handlers de comandos y mensajes
 # =============================================================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -327,17 +308,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Maneja los botones interactivos (CallbackQuery).
-    Edita el mismo mensaje en lugar de crear uno nuevo.
     """
     query = update.callback_query
     user_id = query.from_user.id
-    await query.answer()  # Contesta al CallbackQuery para remover el 'loading...'
+    await query.answer()  # Quita el "loading..."
 
     if query.data == "obtener_codigo":
         user_log(user_id, "Usuario seleccionó Obtener Código.")
-        keyboard = [
-            [InlineKeyboardButton("Cancelar", callback_data="cancel")]
-        ]
+        keyboard = [[InlineKeyboardButton("Cancelar", callback_data="cancel")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await query.edit_message_text(
@@ -348,18 +326,12 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "help":
         user_log(user_id, "Usuario solicitó Ayuda.")
-        keyboard = [
-            [InlineKeyboardButton("Volver", callback_data="volver_menu")]
-        ]
+        keyboard = [[InlineKeyboardButton("Volver", callback_data="volver_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
+        # Usa el HELP_TEXT definido
         await query.edit_message_text(
-            text=(
-                "Este bot te ayuda a obtener códigos de verificación enviados a tu correo.\n\n"
-                "1. **Escribe tu correo electrónico** cuando se te pida.\n"
-                "2. **El bot buscará el correo más reciente** y te proporcionará el código de 6 dígitos.\n\n"
-                "Si necesitas ayuda adicional, contáctanos."
-            ),
+            text=HELP_TEXT,
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -387,9 +359,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "cambiar_correo":
         user_log(user_id, "Usuario seleccionó Cambiar Correo (Reintentar).")
-        keyboard = [
-            [InlineKeyboardButton("Cancelar", callback_data="cancel")]
-        ]
+        keyboard = [[InlineKeyboardButton("Cancelar", callback_data="cancel")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await query.edit_message_text(
@@ -420,13 +390,13 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Procesa la dirección de correo ingresada por el usuario (mientras awaiting_email=True).
     """
     if context.user_data.get('awaiting_email', False):
-        email_address = update.message.text.strip()
+        requested_email = update.message.text.strip()
         user_id = update.effective_user.id
 
-        user_log(user_id, f"Usuario solicitó código para el correo: {email_address}")
+        user_log(user_id, f"Usuario solicitó código para el correo: {requested_email}")
 
         # Verifica si el usuario tiene permiso
-        if not user_has_access(user_id, email_address):
+        if not user_has_access(user_id, requested_email):
             user_log(user_id, "Acceso denegado (sin permisos).")
             await update.message.reply_text(
                 "❌ **No tienes permiso para consultar este correo.**\n"
@@ -436,32 +406,14 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['awaiting_email'] = False
             return
 
-        # Obtiene (o crea) las credenciales
-        imap_server, app_password = get_credentials(email_address)
-        if not imap_server or not app_password:
-            user_log(user_id, f"Correo '{email_address}' sin credenciales completas (IMAP={imap_server}, Pass={app_password}).")
-            keyboard = [
-                [
-                    InlineKeyboardButton("Reintentar", callback_data="cambiar_correo"),
-                    InlineKeyboardButton("Volver al Menú Principal", callback_data="volver_menu")
-                ]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-
-            await update.message.reply_text(
-                "⚠️ **Correo no encontrado o credenciales incompletas en el sistema.**",
-                parse_mode="Markdown",
-                reply_markup=reply_markup
-            )
-            context.user_data['awaiting_email'] = False
-            return
-
+        # Mensaje de espera
         await update.message.reply_text(
             "🔄 **Buscando tu código, por favor espera...**",
             parse_mode="Markdown"
         )
 
-        code, minutes = get_verification_code(email_address, imap_server, app_password)
+        # Obtiene el código usando la cuenta principal
+        code, minutes = get_verification_code(requested_email)
         if code:
             user_log(user_id, f"Código obtenido: {code} (hace {minutes} minutos).")
             await update.message.reply_text(
@@ -470,7 +422,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
         else:
-            user_log(user_id, "No se encontró código reciente o error en la conexión.")
+            user_log(user_id, "No se encontró código o error en la conexión.")
             await update.message.reply_text(
                 "⚠️ **No se encontró ningún código reciente** o no se pudo obtener.",
                 parse_mode="Markdown"
@@ -508,7 +460,29 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # =============================================================================
-# 8. Comandos de administración y utilidad
+# 6. Comando /help (opcional, además del botón Ayuda)
+# =============================================================================
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Muestra el mismo texto que el botón "Ayuda" en el menú principal.
+    """
+    user_id = update.effective_user.id
+    user_log(user_id, "Usuario ejecutó /help.")
+
+    keyboard = [[InlineKeyboardButton("Volver", callback_data="volver_menu")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        text=HELP_TEXT,
+        parse_mode="Markdown",
+        reply_markup=reply_markup
+    )
+    context.user_data['awaiting_email'] = False
+
+
+# =============================================================================
+# 7. Comandos de administración y utilidad
 # =============================================================================
 
 async def mi_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -524,11 +498,12 @@ async def mi_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /add_access <user_id> <correo1> [<correo2> ...]
+    Agrega uno o varios correos a la lista de permitidos para un user_id.
     """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"Admin ejecutó /add_access con args {context.args}")
 
-    if admin_user_id != ADMIN_ID:
+    if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
@@ -544,6 +519,7 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     row_index = df_users.index[df_users['UserID'] == target_user_id].tolist()
 
     if not row_index:
+        # Usuario no existe, creamos nueva fila
         new_row = {
             'UserID': target_user_id,
             'Emails': ';'.join(new_emails)
@@ -555,6 +531,7 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "\n".join(new_emails)
         )
     else:
+        # Usuario existe, actualizamos
         idx = row_index[0]
         current_emails_str = df_users.at[idx, 'Emails']
         current_emails = set(e.strip().lower() for e in current_emails_str.split(';') if e.strip()) \
@@ -574,11 +551,12 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /remove_access <user_id> <correo1> [<correo2> ...]
+    Elimina uno o varios correos de la lista de permitidos para un user_id.
     """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"Admin ejecutó /remove_access con args {context.args}")
 
-    if admin_user_id != ADMIN_ID:
+    if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
@@ -636,7 +614,7 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, "Admin ejecutó /list_users")
 
-    if admin_user_id != ADMIN_ID:
+    if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
@@ -655,23 +633,19 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # =============================================================================
-# 9. Main / Ejecución del bot
+# 8. Main / Ejecución del bot
 # =============================================================================
 
 if __name__ == "__main__":
-    # Inicializa colorama (importante en Windows para ANSI, etc.)
+    # Inicializa colorama para consola con colores
     colorama.init(autoreset=True)
 
-    # Creamos un StreamHandler para la consola
+    # Logger con colores
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
-
-    # Definimos el formato de log (fecha, logger, nivel, mensaje)
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    # Asignamos nuestro formatter con colores
     console_handler.setFormatter(ColorfulFormatter(log_format))
 
-    # Obtenemos el logger raíz
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
@@ -681,6 +655,7 @@ if __name__ == "__main__":
 
     # Handlers básicos
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))  # /help adicional
     application.add_handler(CallbackQueryHandler(handle_buttons))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, email_input))
     application.add_handler(CommandHandler("cancel", cancel))
