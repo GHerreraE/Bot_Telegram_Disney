@@ -3,7 +3,7 @@
 # Autor: Don Marcial
 # Fecha de Creación: 2024/Diciembre
 # Última Actualización: 2025/Enero
-# Versión: 4.1 (Soporte Múltiples Admins + /help + WhatsApp en la ayuda)
+# Versión: 4.2 (Soporte Múltiples Admins + /help + WhatsApp en la ayuda + DB en TXT)
 # =============================================================================
 
 import os
@@ -11,7 +11,6 @@ import socket
 import imaplib
 import email
 import re
-import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
@@ -66,8 +65,8 @@ def is_admin(user_id: int) -> bool:
     """
     return user_id in ADMIN_IDS
 
-# Archivo de usuarios autorizados
-USERS_FILE = 'usuarios.xlsx'
+# Usaremos un archivo de texto para la "base de datos" de usuarios y correos
+USERS_DB_FILE = 'users_db.txt'
 
 # Carpeta de logs
 LOGS_FOLDER = "logs"
@@ -118,29 +117,59 @@ def user_log(user_id: int, message: str):
 
 
 # =============================================================================
-# 3. Funciones de carga y guardado de usuarios
+# 3. Carga y guardado de usuarios (ahora en archivo TXT)
 # =============================================================================
 
 def load_users():
     """
-    Carga el archivo usuarios.xlsx, que debe tener columnas:
-    - 'UserID' (int)
-    - 'Emails' (str separada por ;)
+    Carga los usuarios y sus correos desde USERS_DB_FILE.
+    Formato de cada línea: <UserID> <email1> <email2> ...
+    Retorna un diccionario: { user_id: {email1, email2, ...}, ... }
     """
-    try:
-        df_users = pd.read_excel(USERS_FILE)
-        if not {'UserID', 'Emails'}.issubset(df_users.columns):
-            raise ValueError(
-                f"El archivo {USERS_FILE} no contiene las columnas necesarias (UserID, Emails)."
-            )
-        return df_users
-    except FileNotFoundError:
-        df_users = pd.DataFrame(columns=['UserID', 'Emails'])
-        df_users.to_excel(USERS_FILE, index=False)
-        return df_users
+    users_dict = {}
+    if not os.path.exists(USERS_DB_FILE):
+        return users_dict
 
-def save_users(df_users):
-    df_users.to_excel(USERS_FILE, index=False)
+    with open(USERS_DB_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                # Puede haber un user_id sin correos
+                try:
+                    user_id = int(parts[0])
+                    users_dict[user_id] = set()
+                except ValueError:
+                    pass
+                continue
+
+            # Primer elemento es el user_id, el resto son correos
+            try:
+                user_id = int(parts[0])
+            except ValueError:
+                # Si no podemos convertir el user_id, ignoramos la línea
+                continue
+
+            emails = set(parts[1:])  # resto de la línea son correos
+            users_dict[user_id] = emails
+
+    return users_dict
+
+def save_users(users_dict):
+    """
+    Guarda el diccionario de usuarios en USERS_DB_FILE.
+    Cada línea: <UserID> <email1> <email2> ...
+    """
+    with open(USERS_DB_FILE, 'w', encoding='utf-8') as f:
+        for user_id, emails_set in users_dict.items():
+            if emails_set:
+                emails_str = " ".join(sorted(emails_set))
+                f.write(f"{user_id} {emails_str}\n")
+            else:
+                # Si no tiene correos, solo escribimos el user_id
+                f.write(f"{user_id}\n")
 
 
 # =============================================================================
@@ -157,17 +186,12 @@ def user_has_access(user_id: int, email_address: str) -> bool:
         return True
 
     # Si no es admin, revisamos la lista de usuarios
-    df_users = load_users()
-    row = df_users.loc[df_users['UserID'] == user_id]
-    if row.empty:
+    users_dict = load_users()
+    if user_id not in users_dict:
         return False
 
-    emails_str = row.iloc[0]['Emails']
-    if not emails_str or pd.isna(emails_str):
-        return False
-
-    allowed_emails = set(email.strip().lower() for email in emails_str.split(';') if email.strip())
-    return email_address.lower() in allowed_emails
+    # Comparamos en minúsculas
+    return email_address.lower() in [e.lower() for e in users_dict[user_id]]
 
 
 def get_verification_code(requested_email: str):
@@ -213,7 +237,7 @@ def get_verification_code(requested_email: str):
                     time_diff = now - parsed_date
                     total_minutes = int(time_diff.total_seconds() // 60)
 
-                    # Verificar destinatarios
+                    # Verificar destinatarios en varios headers
                     recipients = []
                     for header_key, header_value in msg_obj.items():
                         if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
@@ -512,40 +536,29 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Uso: /add_access <user_id> <correo1> [<correo2> ...]")
         return
 
-    target_user_id = int(args[0])
+    try:
+        target_user_id = int(args[0])
+    except ValueError:
+        await update.message.reply_text("El primer argumento debe ser un número (user_id).")
+        return
+
     new_emails = args[1:]
 
-    df_users = load_users()
-    row_index = df_users.index[df_users['UserID'] == target_user_id].tolist()
-
-    if not row_index:
-        # Usuario no existe, creamos nueva fila
-        new_row = {
-            'UserID': target_user_id,
-            'Emails': ';'.join(new_emails)
-        }
-        df_users = pd.concat([df_users, pd.DataFrame([new_row])], ignore_index=True)
-        save_users(df_users)
-        await update.message.reply_text(
-            f"✅ Se ha creado el usuario {target_user_id} con acceso a:\n" +
-            "\n".join(new_emails)
-        )
+    users_dict = load_users()
+    if target_user_id not in users_dict:
+        # Si el user no existe, lo creamos
+        users_dict[target_user_id] = set(new_emails)
     else:
-        # Usuario existe, actualizamos
-        idx = row_index[0]
-        current_emails_str = df_users.at[idx, 'Emails']
-        current_emails = set(e.strip().lower() for e in current_emails_str.split(';') if e.strip()) \
-                         if isinstance(current_emails_str, str) else set()
-
+        # Si existe, actualizamos
         for mail in new_emails:
-            current_emails.add(mail.lower())
+            users_dict[target_user_id].add(mail.lower())
 
-        df_users.at[idx, 'Emails'] = ';'.join(sorted(current_emails))
-        save_users(df_users)
-        await update.message.reply_text(
-            f"✅ Se ha actualizado el usuario {target_user_id}.\n"
-            f"Accesos actuales: {df_users.at[idx, 'Emails']}"
-        )
+    save_users(users_dict)
+
+    await update.message.reply_text(
+        f"✅ Se ha agregado acceso al usuario {target_user_id} para:\n" +
+        "\n".join(new_emails)
+    )
 
 
 async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -565,36 +578,33 @@ async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Uso: /remove_access <user_id> <correo1> [<correo2> ...]")
         return
 
-    target_user_id = int(args[0])
+    try:
+        target_user_id = int(args[0])
+    except ValueError:
+        await update.message.reply_text("El primer argumento debe ser un número (user_id).")
+        return
+
     emails_to_remove = args[1:]
 
-    df_users = load_users()
-    row_index = df_users.index[df_users['UserID'] == target_user_id].tolist()
-
-    if not row_index:
+    users_dict = load_users()
+    if target_user_id not in users_dict:
         await update.message.reply_text(
             f"⚠️ El usuario {target_user_id} no existe en la base de datos."
         )
         return
 
-    idx = row_index[0]
-    current_emails_str = df_users.at[idx, 'Emails']
-    if not current_emails_str or pd.isna(current_emails_str):
-        await update.message.reply_text(
-            f"El usuario {target_user_id} no tiene correos asignados actualmente."
-        )
-        return
-
-    current_emails = set(e.strip().lower() for e in current_emails_str.split(';') if e.strip())
+    current_emails = users_dict[target_user_id]
     removed = []
+
     for mail in emails_to_remove:
         mail_lower = mail.lower()
         if mail_lower in current_emails:
             current_emails.remove(mail_lower)
             removed.append(mail_lower)
 
-    df_users.at[idx, 'Emails'] = ';'.join(sorted(current_emails)) if current_emails else ""
-    save_users(df_users)
+    # Actualizamos el set de ese usuario
+    users_dict[target_user_id] = current_emails
+    save_users(users_dict)
 
     if removed:
         await update.message.reply_text(
@@ -618,16 +628,15 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
-    df_users = load_users()
-    if df_users.empty:
+    users_dict = load_users()
+    if not users_dict:
         await update.message.reply_text("No hay usuarios en la base de datos.")
         return
 
     msg = ["**Lista de Usuarios Autorizados**\n"]
-    for _, row in df_users.iterrows():
-        uid = row['UserID']
-        emails = row['Emails'] if isinstance(row['Emails'], str) else ""
-        msg.append(f"- **UserID**: `{uid}` | **Emails**: `{emails}`")
+    for uid, emails_set in users_dict.items():
+        emails_str = ", ".join(sorted(emails_set)) if emails_set else "(sin correos)"
+        msg.append(f"- **UserID**: `{uid}` | **Emails**: `{emails_str}`")
 
     await update.message.reply_text("\n".join(msg), parse_mode="Markdown")
 
@@ -668,5 +677,5 @@ if __name__ == "__main__":
     # Handler de utilidad
     application.add_handler(CommandHandler("mi_id", mi_id))
 
-    # Ejecutamos el bot
+    # Ejecutamos el bot (polling)
     application.run_polling()
