@@ -1,0 +1,29 @@
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito1@dmarcial.com
+No se encontró código o error en la conexión.
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito2@dmarcial.com
+Código obtenido: 322353 (hace 71 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito3@dmarcial.com
+Código obtenido: 395167 (hace 73 minutos).
+Usuario ejecutó /help.
+Admin ejecutó /add_access con args []
+Admin ejecutó /add_access con args ['12345678', 'test1@gmail.com']
+Admin ejecutó /remove_access con args []
+Admin ejecutó /list_users
+Usuario ejecutó /cancel sin operación activa.
+Admin ejecutó /remove_access con args []
+Admin ejecutó /remove_access con args []
+Admin ejecutó /remove_access con args ['12345678', 'test1@gmail.com']
+Admin ejecutó /list_users
+Usuario ejecutó /start.
+Usuario solicitó /mi_id.
+Usuario solicitó /mi_id.
+Usuario ejecutó /help.
+Usuario seleccionó Volver al Menú Principal.
+Usuario solicitó Ayuda.
+Usuario seleccionó Volver al Menú Principal.
