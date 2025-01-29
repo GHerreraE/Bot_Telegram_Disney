@@ -15,3 +15,60 @@ Usuario ejecutó /start.
 Usuario seleccionó Obtener Código.
 Usuario solicitó código para el correo: disneycito1@dmarcial.com
 Código obtenido: 563495 (hace 0 minutos).
+Admin ejecutó /list_users
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito1@dmarcial.com
+Código obtenido: 563495 (hace 359 minutos).
+Admin ejecutó /add_access con args []
+Admin ejecutó /list_users
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito1@dmarcial.com
+Código obtenido: 270949 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito2@dmarcial.com
+Código obtenido: 470722 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito3@dmarcial.com
+Código obtenido: 000245 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito4@dmarcial.com
+Código obtenido: 705147 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito5@dmarcial.com
+Código obtenido: 589987 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito6@dmarcial.com
+Código obtenido: 793973 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito7@dmarcial.com
+Código obtenido: 974119 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito8@dmarcial.com
+Código obtenido: 841922 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito9@dmarcial.com
+Código obtenido: 466190 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito9@dmarcial.com
+Código obtenido: 334923 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito10@dmarcial.com
+Código obtenido: 113679 (hace 1 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito10@dmarcial.com
+Código obtenido: 843070 (hace 0 minutos).
+Admin ejecutó /list_users
+Admin ejecutó /list_users

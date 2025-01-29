@@ -1,3 +1,10 @@
 Usuario ejecutó /start.
 Usuario seleccionó Obtener Código.
 Usuario solicitó /mi_id.
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito1@dmarcial.com
+Código obtenido: 563495 (hace 360 minutos).
+Admin ejecutó /add_access con args []
+Admin ejecutó /add_access con args []
+Admin ejecutó /add_access con args ['731397974', 'disneycito11@dmarcial.com']
