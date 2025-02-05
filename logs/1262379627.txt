@@ -1,3 +1,0 @@
-Usuario ejecutó /start.
-Usuario seleccionó Obtener Código.
-Usuario solicitó /mi_id.
