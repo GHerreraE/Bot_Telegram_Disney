@@ -1,0 +1,2 @@
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.

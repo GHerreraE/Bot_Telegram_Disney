@@ -1,0 +1,2 @@
+Usuario ejecutó /start.
+Usuario solicitó /mi_id.

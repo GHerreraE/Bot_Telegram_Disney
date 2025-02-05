@@ -72,3 +72,60 @@ Usuario solicitó código para el correo: disneycito10@dmarcial.com
 Código obtenido: 843070 (hace 0 minutos).
 Admin ejecutó /list_users
 Admin ejecutó /list_users
+Usuario ejecutó /help.
+Usuario seleccionó Volver al Menú Principal.
+Usuario seleccionó Obtener Código.
+Usuario seleccionó Cancelar desde un botón.
+Usuario solicitó Ayuda.
+Usuario seleccionó Volver al Menú Principal.
+Admin ejecutó /remove_access con args []
+Usuario ejecutó /cancel sin operación activa.
+Usuario ejecutó /cancel sin operación activa.
+Admin ejecutó /list_users
+Admin ejecutó /list_users
+Admin ejecutó /list_users
+Admin ejecutó /add_access con args []
+Admin ejecutó /add_access con args ['1528206138', 'disneycito12@dmarcial.com']
+Admin ejecutó /list_users
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito13@dmarcial.com
+No se encontró código o error en la conexión.
+Usuario ejecutó /help.
+Usuario seleccionó Volver al Menú Principal.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito13@dmarcial.com
+Código obtenido: 684437 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito13@dmarcial.com
+Código obtenido: 159247 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito14@dmarcial.com
+Código obtenido: 141609 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito15@dmarcial.com
+Código obtenido: 899584 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito16@dmarcial.com
+Código obtenido: 310930 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito17@dmarcial.com
+Código obtenido: 795939 (hace 0 minutos).
+Admin ejecutó /list_users
+Usuario solicitó /mi_id.
+Admin ejecutó /add_access con args ['1262379627', 'disneycito18@dmarcial.com']
+Admin ejecutó /add_access con args ['1417342182', 'disneycito18@dmarcial.com']
+Admin ejecutó /list_users
+Usuario solicitó /mi_id.
+Admin ejecutó /list_users
+Admin ejecutó /list_users
+Admin ejecutó /list_users
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito19@dmarcial.com
+Código obtenido: 166862 (hace 0 minutos).

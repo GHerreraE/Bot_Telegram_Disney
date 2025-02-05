@@ -1,0 +1,17 @@
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito12@dmarcial.com
+Acceso denegado (sin permisos).
+Usuario solicitó /mi_id.
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito12@dmarcial.com
+Acceso denegado (sin permisos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito12@dmarcial.com
+Código obtenido: 630390 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito12@dmarcial.com
+Código obtenido: 144887 (hace 0 minutos).

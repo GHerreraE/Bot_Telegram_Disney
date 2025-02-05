@@ -4,3 +4,9 @@ Usuario solicitó código para el correo: @EntretenimientoDigital2020
 Acceso denegado (sin permisos).
 Usuario solicitó /mi_id.
 Admin ejecutó /add_access con args []
+Admin ejecutó /add_access con args []
+Usuario solicitó /mi_id.
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito11@dmarcial.com
+Código obtenido: 096314 (hace 560 minutos).
