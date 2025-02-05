@@ -129,3 +129,11 @@ Usuario ejecutó /start.
 Usuario seleccionó Obtener Código.
 Usuario solicitó código para el correo: disneycito19@dmarcial.com
 Código obtenido: 166862 (hace 0 minutos).
+Usuario ejecutó /start.
+Usuario seleccionó Obtener Código.
+Usuario solicitó código para el correo: disneycito19@dmarcial.com
+Código obtenido: 166862 (hace 72 minutos).
+Usuario ejecutó /help.
+Admin ejecutó /add_access con args []
+Admin ejecutó /list_users
+Usuario ejecutó /cancel sin operación activa.
