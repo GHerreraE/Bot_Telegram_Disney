@@ -28,7 +28,6 @@ from telegram.ext import (
 # 1. CONFIGURACIÓN INICIAL
 # =============================================================================
 
-# Aquí asumimos que todos los correos usan PrivateEmail
 IMAP_HOST = "mail.privateemail.com"
 
 # Leemos múltiples cuentas desde admin_imap_pass.txt (una por línea, "correo|contraseña")
@@ -47,7 +46,7 @@ def load_email_accounts(filename='admin_imap_pass.txt'):
             if not line:
                 continue
             if '|' not in line:
-                # Si la línea no contiene '|', la ignoramos o podrías hacer un raise.
+                # Si la línea no contiene '|', la ignoramos o podrías lanzar un error.
                 continue
             email_str, password_str = line.split("|", 1)
             accounts.append((email_str.strip(), password_str.strip()))
@@ -215,6 +214,8 @@ def user_has_valid_access(user_id: int, email_address: str) -> bool:
 # 4. FUNCIONES PARA DISNEY+ Y NETFLIX
 # =============================================================================
 
+# ----------------- DISNEY+ ------------------
+
 def get_disney_code(requested_email: str):
     """
     Busca un correo de Disney+ en las cuentas definidas en EMAIL_ACCOUNTS.
@@ -272,7 +273,7 @@ def get_disney_code(requested_email: str):
             server.logout()
         except Exception as e:
             logging.error(f"Error con la cuenta {acc_email} al buscar Disney+: {e}")
-            # Prueba la siguiente cuenta
+            # Intenta la siguiente cuenta
 
     return None, None
 
@@ -329,7 +330,26 @@ def get_netflix_country_info(requested_email: str):
     """
     return _search_netflix_email(requested_email, _parse_netflix_country)
 
+def get_netflix_temporary_access_link(requested_email: str):
+    """
+    Busca en los correos de Netflix el link específico para "account/travel/verify".
+    Retorna (link, minutes) o (None, None).
+    """
+    return _search_netflix_email(requested_email, _parse_netflix_temporary_link)
+
+# (NUEVO) --> Función para "Código Actualiza Hogar"
+def get_netflix_update_household_link(requested_email: str):
+    """
+    Busca en los correos de Netflix el link específico para "account/update-primary-location".
+    Retorna (link, minutes) o (None, None).
+    """
+    return _search_netflix_email(requested_email, _parse_netflix_update_household_link)
+
 def _search_netflix_email(requested_email: str, parse_function):
+    """
+    Función genérica para buscar en correos de Netflix.
+    parse_function es la función que extrae el dato que necesitamos (link, código, etc.)
+    """
     socket.setdefaulttimeout(10)
     for (acc_email, acc_password) in EMAIL_ACCOUNTS:
         try:
@@ -383,7 +403,6 @@ def _search_netflix_email(requested_email: str, parse_function):
     return None, None
 
 def _parse_netflix_link(msg_obj):
-    # Buscar enlace con 'restablecer contraseña' o 'password?'
     if msg_obj.is_multipart():
         for part in msg_obj.walk():
             ctype = part.get_content_type()
@@ -412,6 +431,7 @@ def _find_reset_link_in_text(content, ctype):
             if "password?" in a["href"]:
                 return a["href"]
     else:
+        # texto plano
         match = re.search(r'(https?://[^\s]+password\?[^"\s]*)', content)
         if match:
             return match.group(1)
@@ -479,11 +499,52 @@ def _extract_src_value(full_text):
     return None
 
 def _parse_language_country(src_string):
-    # busca _xx_YY_ => lang=xx, country=YY
+
     match = re.search(r'_([a-z]{2})_([A-Z]{2})_', src_string)
     if match:
         return match.group(1), match.group(2)
     return None, None
+
+def _parse_netflix_temporary_link(msg_obj):
+    """
+    Busca un enlace que contenga:
+    https://www.netflix.com/account/travel/verify?nftoken=...
+    """
+    travel_link_regex = r'(https?://[^"\s]+/account/travel/verify\?nftoken=[^"\s]+)'
+    return _search_link_by_regex(msg_obj, travel_link_regex)
+
+
+def _parse_netflix_update_household_link(msg_obj):
+    """
+    Busca un enlace que contenga:
+    https://www.netflix.com/account/update-primary-location?nftoken=...
+    """
+    update_household_regex = r'(https?://[^"\s]+/account/update-primary-location\?nftoken=[^"\s]+)'
+    return _search_link_by_regex(msg_obj, update_household_regex)
+
+def _search_link_by_regex(msg_obj, regex_pattern):
+    """
+    Función auxiliar para buscar en el cuerpo del correo (HTML / texto)
+    la expresión regular que capture el enlace deseado.
+    """
+    if msg_obj.is_multipart():
+        for part in msg_obj.walk():
+            ctype = part.get_content_type()
+            if ctype in ["text/html", "text/plain"]:
+                content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                link_match = re.search(regex_pattern, content)
+                if link_match:
+                    return link_match.group(1)
+    else:
+        ctype = msg_obj.get_content_type()
+        if ctype in ["text/html", "text/plain"]:
+            content = msg_obj.get_payload(decode=True).decode('utf-8', errors='ignore')
+            link_match = re.search(regex_pattern, content)
+            if link_match:
+                return link_match.group(1)
+
+    return None
+
 
 # =============================================================================
 # 5. HANDLERS DE TELEGRAM
@@ -529,6 +590,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔗 Link Restablecimiento", callback_data="netflix_reset_link")],
             [InlineKeyboardButton("🔑 Código Único (4 díg.)", callback_data="netflix_access_code")],
             [InlineKeyboardButton("🌎 País/Idioma", callback_data="netflix_country_info")],
+            [InlineKeyboardButton("🔑 Acceso Temporal", callback_data="netflix_temporary_access")],
+            [InlineKeyboardButton("🏠 Actualiza Hogar", callback_data="netflix_update_household")],
             [InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -566,6 +629,27 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup
         )
         context.user_data['awaiting_email_for'] = 'netflix_country_info'
+
+    elif query.data == "netflix_temporary_access":
+        user_log(user_id, "Netflix => Código Acceso Temporal")
+        keyboard = [[InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text="Ingresa el correo para buscar el enlace de acceso temporal:",
+            reply_markup=reply_markup
+        )
+        context.user_data['awaiting_email_for'] = 'netflix_temporary_access'
+
+    # (NUEVO) Callback para “Código Actualiza Hogar”
+    elif query.data == "netflix_update_household":
+        user_log(user_id, "Netflix => Código Actualiza Hogar")
+        keyboard = [[InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text="Ingresa el correo para buscar el enlace de 'Actualizar Hogar':",
+            reply_markup=reply_markup
+        )
+        context.user_data['awaiting_email_for'] = 'netflix_update_household'
 
     elif query.data == "help":
         user_log(user_id, "Ayuda")
@@ -613,7 +697,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Handler que se activa cuando el usuario ingresa texto (y no es comando).
-    Verifica qué correo pidieron y para qué servicio (Disney+ o Netflix).
+    Verifica qué correo pidieron y para qué servicio.
     """
     user_id = update.effective_user.id
     requested_email = update.message.text.strip()
@@ -676,10 +760,37 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 f"🌎 País: {country}\n"
                 f"💬 Idioma: {lang}\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                
             )
         else:
             await update.message.reply_text("⚠️ No se encontró país/idioma en el correo de Netflix.")
+
+    elif awaiting == "netflix_temporary_access":
+        link, minutes = get_netflix_temporary_access_link(requested_email)
+        if link:
+            user_log(user_id, f"Link Netflix (Acceso Temporal): {link}")
+            await update.message.reply_text(
+                f"🔗 Aquí tienes tu enlace de acceso temporal:\n{link}\n\n"
+                f"⌛ Recibido hace {minutes} minutos."
+            )
+        else:
+            await update.message.reply_text(
+                "⚠️ No se encontró ningún enlace de acceso temporal en tu correo de Netflix."
+            )
+
+    # (NUEVO) - Manejo de “Código Actualiza Hogar”
+    elif awaiting == "netflix_update_household":
+        link, minutes = get_netflix_update_household_link(requested_email)
+        if link:
+            user_log(user_id, f"Link Netflix (Actualizar Hogar): {link}")
+            await update.message.reply_text(
+                f"🔗 Aquí tienes tu enlace de 'Actualizar Hogar':\n{link}\n\n"
+                f"⌛ Recibido hace {minutes} minutos."
+            )
+        else:
+            await update.message.reply_text(
+                "⚠️ No se encontró ningún enlace de 'Actualizar Hogar' en tu correo de Netflix."
+            )
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -788,10 +899,8 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now().date()
     current_exp = users_dict[target_user_id].get(email_arg)
     if current_exp is None:
-        # antes estaba ilimitado o no existía => definimos la fecha base = hoy
         base_date = today
     else:
-        # si existía fecha, extendemos desde la fecha mayor
         base_date = max(today, current_exp)
 
     new_exp = base_date + timedelta(days=days)
