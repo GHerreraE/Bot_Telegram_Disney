@@ -30,11 +30,9 @@ from telegram.ext import (
 
 IMAP_HOST = "mail.privateemail.com"
 
-# Leemos múltiples cuentas desde admin_imap_pass.txt (una por línea, "correo|contraseña")
 def load_email_accounts(filename='admin_imap_pass.txt'):
     """
     Cada línea: 'correo@dominio.com|password'
-    Devuelve una lista de tuplas [(correo, contraseña), ...].
     """
     accounts = []
     if not os.path.exists(filename):
@@ -46,7 +44,6 @@ def load_email_accounts(filename='admin_imap_pass.txt'):
             if not line:
                 continue
             if '|' not in line:
-                # Si la línea no contiene '|', la ignoramos o podrías lanzar un error.
                 continue
             email_str, password_str = line.split("|", 1)
             accounts.append((email_str.strip(), password_str.strip()))
@@ -55,9 +52,6 @@ def load_email_accounts(filename='admin_imap_pass.txt'):
 EMAIL_ACCOUNTS = load_email_accounts()
 
 def load_admin_ids(filename='admin_ids.txt'):
-    """
-    Carga IDs de administradores (uno por línea).
-    """
     admin_ids = []
     try:
         with open(filename, 'r', encoding='utf-8') as f:
@@ -72,9 +66,6 @@ def load_admin_ids(filename='admin_ids.txt'):
 ADMIN_IDS = load_admin_ids()
 
 def is_admin(user_id: int) -> bool:
-    """
-    Verifica si user_id está en la lista de administradores.
-    """
     return user_id in ADMIN_IDS
 
 USERS_DB_FILE = 'users_db.txt'
@@ -82,18 +73,23 @@ LOGS_FOLDER = "logs"
 if not os.path.exists(LOGS_FOLDER):
     os.makedirs(LOGS_FOLDER)
 
-# Este archivo contendrá el token del bot (solo una línea con el token)
 with open('token.txt', 'r', encoding='utf-8') as token_file:
     TELEGRAM_BOT_TOKEN = token_file.read().strip()
 
+PHONE_NUMBER = ""
+if os.path.exists('help_phone.txt'):
+    with open('help_phone.txt', 'r', encoding='utf-8') as phone_file:
+        PHONE_NUMBER = phone_file.read().strip()
+
 HELP_TEXT = (
     "ℹ️ *Ayuda del Bot*\n\n"
-    "Este bot te permite obtener códigos de *Disney+* o *Netflix* "
-    "si tienes permiso sobre el correo.\n"
+    "Este bot te permite obtener códigos de *Disney+* o *Netflix*, "
+    "si tienes permiso sobre el correo. Y, para extraer códigos, "
+    "debes contar con un permiso especial (o ser admin).\n\n"
     "1. Pulsa un botón en el menú principal.\n"
     "2. Ingresa tu correo.\n"
-    "3. Te enviaremos el código o link si lo encontramos.\n\n"
-    "Si necesitas más ayuda, contáctanos por WhatsApp: +34624090880. 💬"
+    "3. Te enviaremos el código o link si lo encontramos (y tienes permiso).\n\n"
+    f"Si necesitas más ayuda, contáctanos por WhatsApp: {PHONE_NUMBER} 💬"
 )
 
 # =============================================================================
@@ -115,22 +111,13 @@ class ColorfulFormatter(logging.Formatter):
         return f"{log_color}{message}{Style.RESET_ALL}"
 
 def user_log(user_id: int, message: str):
-    """
-    Registra en logs/<user_id>.txt las acciones del usuario.
-    """
     log_file = os.path.join(LOGS_FOLDER, f"{user_id}.txt")
     with open(log_file, "a", encoding='utf-8') as f:
         f.write(f"{datetime.now()}: {message}\n")
 
 # =============================================================================
-# 3. BASE DE DATOS DE USUARIOS (CON FECHAS DE EXPIRACIÓN)
+# 3. BASE DE DATOS DE USUARIOS (ACCESO A CORREOS)
 # =============================================================================
-
-"""
-En users_db.txt guardamos:
-<user_id> email1:YYYY-MM-DD email2:YYYY-MM-DD ...
-Si no hay fecha, se asume acceso indefinido (None).
-"""
 
 def load_users():
     """
@@ -148,14 +135,12 @@ def load_users():
             parts = line.split()
             if len(parts) < 1:
                 continue
-            # primer elemento => user_id
             try:
                 uid = int(parts[0])
             except ValueError:
                 continue
 
             users_dict[uid] = {}
-            # resto => email:fecha
             for item in parts[1:]:
                 if ':' in item:
                     mail_part, date_str = item.split(':', 1)
@@ -166,9 +151,7 @@ def load_users():
                         exp_date = None
                     users_dict[uid][mail_part] = exp_date
                 else:
-                    # sin fecha => None
                     users_dict[uid][item.lower()] = None
-
     return users_dict
 
 def save_users(users_dict):
@@ -188,10 +171,6 @@ def save_users(users_dict):
             f.write(line + "\n")
 
 def user_has_valid_access(user_id: int, email_address: str) -> bool:
-    """
-    - Si user_id es administrador => acceso total a cualquier correo.
-    - Si no es admin, verifica si está en la DB y si la fecha no ha expirado.
-    """
     if is_admin(user_id):
         return True
 
@@ -205,22 +184,71 @@ def user_has_valid_access(user_id: int, email_address: str) -> bool:
 
     exp_date = users_dict[user_id][mail]
     if exp_date is None:
-        return True  # acceso indefinido
+        return True
 
     today = datetime.now().date()
     return today <= exp_date
 
 # =============================================================================
-# 4. FUNCIONES PARA DISNEY+ Y NETFLIX
+# 4. BASE DE DATOS DE PERMISO DE CÓDIGOS
 # =============================================================================
 
-# ----------------- DISNEY+ ------------------
+CODE_ACCESS_FILE = "code_access_db.txt"
+
+def load_code_access():
+    code_dict = {}
+    if not os.path.exists(CODE_ACCESS_FILE):
+        return code_dict
+
+    with open(CODE_ACCESS_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            try:
+                uid = int(parts[0])
+            except ValueError:
+                continue
+            date_str = parts[1]
+            if date_str.lower() == "none":
+                code_dict[uid] = None
+            else:
+                try:
+                    code_dict[uid] = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except ValueError:
+                    code_dict[uid] = None
+    return code_dict
+
+def save_code_access(code_dict):
+    with open(CODE_ACCESS_FILE, 'w', encoding='utf-8') as f:
+        for uid, exp_date in code_dict.items():
+            if exp_date is None:
+                f.write(f"{uid} None\n")
+            else:
+                f.write(f"{uid} {exp_date.isoformat()}\n")
+
+def user_has_code_permission(user_id: int) -> bool:
+    if is_admin(user_id):
+        return True
+
+    code_dict = load_code_access()
+    if user_id not in code_dict:
+        return False
+
+    exp_date = code_dict[user_id]
+    if exp_date is None:
+        return True
+    today = datetime.now().date()
+    return today <= exp_date
+
+# =============================================================================
+# 5. FUNCIONES PARA DISNEY+ Y NETFLIX
+# =============================================================================
 
 def get_disney_code(requested_email: str):
-    """
-    Busca un correo de Disney+ en las cuentas definidas en EMAIL_ACCOUNTS.
-    Retorna (code, minutes) o (None, None).
-    """
     socket.setdefaulttimeout(10)
     for (acc_email, acc_password) in EMAIL_ACCOUNTS:
         try:
@@ -228,7 +256,6 @@ def get_disney_code(requested_email: str):
             server.login(acc_email, acc_password)
             server.select("INBOX")
 
-            # Filtra correos de Disney+
             status, messages = server.search(
                 None,
                 '(OR FROM "disneyplus@mail.disneyplus.com" FROM "disneyplus@mail2.disneyplus.com")'
@@ -238,7 +265,6 @@ def get_disney_code(requested_email: str):
                 continue
 
             email_ids = messages[0].split()
-            # Del más reciente al más antiguo
             for email_id in reversed(email_ids):
                 status_msg, msg_data = server.fetch(email_id, "(RFC822)")
                 if status_msg != "OK":
@@ -247,7 +273,7 @@ def get_disney_code(requested_email: str):
                 for response_part in msg_data:
                     if isinstance(response_part, tuple):
                         msg_obj = email.message_from_bytes(response_part[1])
-                        # Verifica destinatario
+
                         recipients = []
                         for header_key, header_value in msg_obj.items():
                             if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
@@ -257,14 +283,12 @@ def get_disney_code(requested_email: str):
                         if requested_email.lower() not in "\n".join(recipients):
                             continue
 
-                        # Minutos desde el envío
                         date_header = msg_obj["Date"]
                         parsed_date = email.utils.parsedate_to_datetime(date_header).astimezone(timezone.utc)
                         now = datetime.now(timezone.utc)
-                        time_diff = now - parsed_date
-                        total_minutes = int(time_diff.total_seconds() // 60)
+                        diff = now - parsed_date
+                        total_minutes = int(diff.total_seconds() // 60)
 
-                        # Extraer código 6 dígitos
                         code = extract_6_digit_code(msg_obj)
                         if code:
                             server.logout()
@@ -273,7 +297,6 @@ def get_disney_code(requested_email: str):
             server.logout()
         except Exception as e:
             logging.error(f"Error con la cuenta {acc_email} al buscar Disney+: {e}")
-            # Intenta la siguiente cuenta
 
     return None, None
 
@@ -307,49 +330,22 @@ def extract_6_digit_code(msg_obj):
                 return match.group(0)
     return None
 
-# ----------------- NETFLIX ------------------
-
 def get_netflix_reset_link(requested_email: str):
-    """
-    Busca un correo de Netflix y extrae el link de restablecimiento.
-    Retorna (link, minutes) o (None, None).
-    """
     return _search_netflix_email(requested_email, _parse_netflix_link)
 
 def get_netflix_access_code(requested_email: str):
-    """
-    Busca un correo de Netflix y extrae un código de EXACTAMENTE 4 dígitos.
-    Retorna (code, minutes).
-    """
     return _search_netflix_email(requested_email, _parse_netflix_code)
 
 def get_netflix_country_info(requested_email: str):
-    """
-    Busca un correo de Netflix para extraer (lang, country) con la etiqueta 'SRC:'.
-    Retorna ((lang, country), minutes).
-    """
     return _search_netflix_email(requested_email, _parse_netflix_country)
 
 def get_netflix_temporary_access_link(requested_email: str):
-    """
-    Busca en los correos de Netflix el link específico para "account/travel/verify".
-    Retorna (link, minutes) o (None, None).
-    """
     return _search_netflix_email(requested_email, _parse_netflix_temporary_link)
 
-# (NUEVO) --> Función para "Código Actualiza Hogar"
 def get_netflix_update_household_link(requested_email: str):
-    """
-    Busca en los correos de Netflix el link específico para "account/update-primary-location".
-    Retorna (link, minutes) o (None, None).
-    """
     return _search_netflix_email(requested_email, _parse_netflix_update_household_link)
 
 def _search_netflix_email(requested_email: str, parse_function):
-    """
-    Función genérica para buscar en correos de Netflix.
-    parse_function es la función que extrae el dato que necesitamos (link, código, etc.)
-    """
     socket.setdefaulttimeout(10)
     for (acc_email, acc_password) in EMAIL_ACCOUNTS:
         try:
@@ -387,8 +383,8 @@ def _search_netflix_email(requested_email: str, parse_function):
                         date_header = msg_obj["Date"]
                         parsed_date = email.utils.parsedate_to_datetime(date_header).astimezone(timezone.utc)
                         now = datetime.now(timezone.utc)
-                        time_diff = now - parsed_date
-                        total_minutes = int(time_diff.total_seconds() // 60)
+                        diff = now - parsed_date
+                        total_minutes = int(diff.total_seconds() // 60)
 
                         extracted_value = parse_function(msg_obj)
                         if extracted_value:
@@ -398,7 +394,6 @@ def _search_netflix_email(requested_email: str, parse_function):
             server.logout()
         except Exception as e:
             logging.error(f"Error con la cuenta {acc_email} al buscar Netflix: {e}")
-            # Pasamos a la siguiente cuenta
 
     return None, None
 
@@ -422,23 +417,19 @@ def _parse_netflix_link(msg_obj):
 def _find_reset_link_in_text(content, ctype):
     if ctype == "text/html":
         soup = BeautifulSoup(content, "html.parser")
-        # 1) <a> con texto "Restablecer contraseña"
         link_tag = soup.find("a", string=re.compile(r"restablecer contraseña", re.IGNORECASE))
         if link_tag and link_tag.get("href"):
             return link_tag["href"]
-        # 2) <a> con "password?" en href
         for a in soup.find_all("a", href=True):
             if "password?" in a["href"]:
                 return a["href"]
     else:
-        # texto plano
-        match = re.search(r'(https?://[^\s]+password\?[^"\s]*)', content)
+        match = re.search(r'(https?://[^\s"\]\)]+password\?[^"\s\]\)]*)', content)
         if match:
             return match.group(1)
     return None
 
 def _parse_netflix_code(msg_obj):
-    # 4 dígitos exactos
     regex_4 = r'\b\d{4}\b'
     if msg_obj.is_multipart():
         for part in msg_obj.walk():
@@ -471,7 +462,6 @@ def _parse_netflix_country(msg_obj):
     src_val = _extract_src_value(full_text)
     if not src_val:
         return None
-
     lang, country = _parse_language_country(src_val)
     if country:
         return (lang, country)
@@ -499,34 +489,20 @@ def _extract_src_value(full_text):
     return None
 
 def _parse_language_country(src_string):
-
     match = re.search(r'_([a-z]{2})_([A-Z]{2})_', src_string)
     if match:
         return match.group(1), match.group(2)
     return None, None
 
 def _parse_netflix_temporary_link(msg_obj):
-    """
-    Busca un enlace que contenga:
-    https://www.netflix.com/account/travel/verify?nftoken=...
-    """
     travel_link_regex = r'(https?://[^"\s]+/account/travel/verify\?nftoken=[^"\s]+)'
     return _search_link_by_regex(msg_obj, travel_link_regex)
 
-
 def _parse_netflix_update_household_link(msg_obj):
-    """
-    Busca un enlace que contenga:
-    https://www.netflix.com/account/update-primary-location?nftoken=...
-    """
     update_household_regex = r'(https?://[^"\s]+/account/update-primary-location\?nftoken=[^"\s]+)'
     return _search_link_by_regex(msg_obj, update_household_regex)
 
 def _search_link_by_regex(msg_obj, regex_pattern):
-    """
-    Función auxiliar para buscar en el cuerpo del correo (HTML / texto)
-    la expresión regular que capture el enlace deseado.
-    """
     if msg_obj.is_multipart():
         for part in msg_obj.walk():
             ctype = part.get_content_type()
@@ -542,12 +518,25 @@ def _search_link_by_regex(msg_obj, regex_pattern):
             link_match = re.search(regex_pattern, content)
             if link_match:
                 return link_match.group(1)
-
     return None
 
+# =============================================================================
+# 6. ESCAPAR TEXTO PARA MARKDOWN
+# =============================================================================
+
+def escape_markdown(text: str) -> str:
+    """
+    Escapa los caracteres que podrían causar problemas en Markdown (versión 1).
+    """
+    # Escapamos: '_', '*', '`', '['
+    text = text.replace("_", "\\_")
+    text = text.replace("*", "\\*")
+    text = text.replace("`", "\\`")
+    text = text.replace("[", "\\[")
+    return text
 
 # =============================================================================
-# 5. HANDLERS DE TELEGRAM
+# 7. HANDLERS DE TELEGRAM
 # =============================================================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -615,7 +604,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            text="Ingresa el correo para buscar el código de acceso:",
+            text="Ingresa el correo para buscar el código de acceso (4 díg):",
             reply_markup=reply_markup
         )
         context.user_data['awaiting_email_for'] = 'netflix_access_code'
@@ -640,7 +629,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['awaiting_email_for'] = 'netflix_temporary_access'
 
-    # (NUEVO) Callback para “Código Actualiza Hogar”
     elif query.data == "netflix_update_household":
         user_log(user_id, "Netflix => Código Actualiza Hogar")
         keyboard = [[InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]]
@@ -695,23 +683,19 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_email_for'] = None
 
 async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Handler que se activa cuando el usuario ingresa texto (y no es comando).
-    Verifica qué correo pidieron y para qué servicio.
-    """
     user_id = update.effective_user.id
     requested_email = update.message.text.strip()
     awaiting = context.user_data.get('awaiting_email_for', None)
 
     if not awaiting:
-        return  # no estaba esperando nada
+        return
 
     user_log(user_id, f"Ingresó correo '{requested_email}' para {awaiting}")
     context.user_data['awaiting_email_for'] = None
 
-    # Verificamos si tiene acceso
+    # Verificar acceso al correo
     if not user_has_valid_access(user_id, requested_email):
-        user_log(user_id, "Acceso denegado o expirado")
+        user_log(user_id, "Acceso denegado o expirado al correo")
         await update.message.reply_text(
             "❌ No tienes permiso (o expiró tu acceso) para ese correo."
         )
@@ -719,73 +703,105 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔄 Buscando, por favor espera...")
 
+    # DISNEY (requiere code permission)
     if awaiting == "disney":
+        if not user_has_code_permission(user_id):
+            user_log(user_id, "Denegado. No tiene code access para Disney")
+            await update.message.reply_text(
+                "❌ No tienes permiso para extraer códigos. Contacta a un administrador."
+            )
+            return
+
         code, minutes = get_disney_code(requested_email)
         if code:
             user_log(user_id, f"Código Disney: {code}")
+            code_esc = escape_markdown(code)
             await update.message.reply_text(
-                f"✅ Tu código Disney+ es: {code}\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                f"✅ Tu código Disney+ es:\n`{code_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text("⚠️ No se encontró un código reciente de Disney+")
 
+    # NETFLIX RESET LINK (no requiere code permission)
     elif awaiting == "netflix_reset_link":
         link, minutes = get_netflix_reset_link(requested_email)
         if link:
+            link_esc = escape_markdown(link)
             user_log(user_id, f"Link Netflix: {link}")
             await update.message.reply_text(
-                f"🔗 Link de restablecimiento:\n{link}\n\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                f"🔗 Link de restablecimiento:\n`{link_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text("⚠️ No se encontró un link reciente de Netflix")
 
+    # NETFLIX CODE (requiere code permission)
     elif awaiting == "netflix_access_code":
+        if not user_has_code_permission(user_id):
+            user_log(user_id, "Denegado. No tiene code access para Netflix code (4 díg)")
+            await update.message.reply_text(
+                "❌ No tienes permiso para extraer códigos. Contacta a un administrador."
+            )
+            return
+
         code, minutes = get_netflix_access_code(requested_email)
         if code:
-            user_log(user_id, f"Código Netflix: {code}")
+            user_log(user_id, f"Código Netflix 4 díg.: {code}")
+            code_esc = escape_markdown(code)
             await update.message.reply_text(
-                f"✅ Código de acceso (4 díg.): {code}\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                f"✅ Código de acceso (4 díg.):\n`{code_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text("⚠️ No se encontró ningún código reciente de Netflix")
 
+    # NETFLIX COUNTRY INFO (no requiere code permission)
     elif awaiting == "netflix_country_info":
         info, minutes = get_netflix_country_info(requested_email)
         if info:
             lang, country = info
+            lang_esc = escape_markdown(lang if lang else "")
+            country_esc = escape_markdown(country if country else "")
             user_log(user_id, f"País/Idioma Netflix: {lang}, {country}")
             await update.message.reply_text(
-                f"🌎 País: {country}\n"
-                f"💬 Idioma: {lang}\n"
-                
+                f"🌎 País: `{country_esc}`\n"
+                f"💬 Idioma: `{lang_esc}`\n"
+                f"⌛ Info extraída hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text("⚠️ No se encontró país/idioma en el correo de Netflix.")
 
+    # NETFLIX TEMPORARY ACCESS (no requiere code permission)
     elif awaiting == "netflix_temporary_access":
         link, minutes = get_netflix_temporary_access_link(requested_email)
         if link:
+            link_esc = escape_markdown(link)
             user_log(user_id, f"Link Netflix (Acceso Temporal): {link}")
             await update.message.reply_text(
-                f"🔗 Aquí tienes tu enlace de acceso temporal:\n{link}\n\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                f"🔗 Aquí tienes tu enlace de acceso temporal:\n`{link_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text(
                 "⚠️ No se encontró ningún enlace de acceso temporal en tu correo de Netflix."
             )
 
-    # (NUEVO) - Manejo de “Código Actualiza Hogar”
+    # NETFLIX UPDATE HOUSEHOLD (no requiere code permission)
     elif awaiting == "netflix_update_household":
         link, minutes = get_netflix_update_household_link(requested_email)
         if link:
+            link_esc = escape_markdown(link)
             user_log(user_id, f"Link Netflix (Actualizar Hogar): {link}")
             await update.message.reply_text(
-                f"🔗 Aquí tienes tu enlace de 'Actualizar Hogar':\n{link}\n\n"
-                f"⌛ Recibido hace {minutes} minutos."
+                f"🔗 Aquí tienes tu enlace de 'Actualizar Hogar':\n`{link_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
             )
         else:
             await update.message.reply_text(
@@ -815,60 +831,97 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No hay ninguna operación activa que cancelar.")
 
 # =============================================================================
-# 6. COMANDOS: /help, /mi_perfil, etc.
+# 8. COMANDOS /help, /mi_perfil
 # =============================================================================
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Muestra el mensaje de ayuda con formato Markdown.
+    """
     user_id = update.effective_user.id
     user_log(user_id, "/help")
+
     keyboard = [[InlineKeyboardButton("Volver ↩️", callback_data="volver_menu")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # No escapamos todo el HELP_TEXT, ya que ya está correctamente formateado en Markdown.
     await update.message.reply_text(
         text=HELP_TEXT,
         parse_mode="Markdown",
         reply_markup=reply_markup
     )
+
     context.user_data['awaiting_email_for'] = None
+
 
 async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    Muestra el ID de Telegram y los correos (con expiración) que tiene el usuario.
-    Si es admin => acceso total, pero igual mostramos si tiene correos propios en la DB.
+    Muestra la información del usuario: ID, correos y permisos de código.
     """
     user_id = update.effective_user.id
     user_log(user_id, "/mi_perfil")
     users_dict = load_users()
 
-    info = f"Tu ID de Telegram: **{user_id}**\n\n"
+    # Escapar solo el user_id dinámico
+    user_id_esc = escape_markdown(str(user_id))
+
+    # Mensaje inicial con negritas
+    info = f"**Tu ID de Telegram:** `{user_id_esc}`\n\n"
+
+    # Verificar si tiene correos asignados
     if user_id not in users_dict or not users_dict[user_id]:
-        info += "No tienes correos asignados en la base de datos."
+        info += "❌ No tienes correos asignados en la base de datos.\n"
     else:
-        info += "Accesos asignados:\n"
+        info += "**Accesos a correos:**\n"
         for mail, exp_date in users_dict[user_id].items():
+            mail_esc = escape_markdown(mail)
             if exp_date is None:
-                info += f" - {mail}: acceso *ilimitado*\n"
+                info += f" - `{mail_esc}`: acceso *ilimitado*\n"
             else:
                 delta = (exp_date - datetime.now().date()).days
                 if delta < 0:
-                    info += f" - {mail}: **Expirado** (expiró el {exp_date.isoformat()})\n"
+                    info += f" - `{mail_esc}`: ❌ **Expirado** (expiró el {exp_date.isoformat()})\n"
                 else:
-                    info += f" - {mail}: {delta} día(s) restante(s) (expira el {exp_date.isoformat()})\n"
+                    info += f" - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date.isoformat()})\n"
 
+    # Permiso de extracción de códigos
+    if user_has_code_permission(user_id):
+        code_dict = load_code_access()
+        if user_id in code_dict:
+            exp_date = code_dict[user_id]
+            if exp_date is None:
+                info += "\n✅ Tienes *permiso ilimitado* para extraer códigos."
+            else:
+                delta = (exp_date - datetime.now().date()).days
+                if delta < 0:
+                    info += "\n❌ Tu permiso para extraer códigos está **expirado**."
+                else:
+                    info += f"\n⏳ Tienes permiso para extraer códigos hasta {exp_date.isoformat()} (faltan {delta} días)."
+        else:
+            info += "\n✅ Tienes permiso para extraer códigos (sin fecha registrada)."
+    else:
+        info += "\n❌ No tienes permiso para extraer códigos."
+
+    # Verificar si es administrador
     if is_admin(user_id):
-        info += "\nEres *administrador*, por lo que tienes acceso total a cualquier correo."
+        info += "\n\n👑 *Eres administrador*, con acceso total."
+
+    # Enviar mensaje con Markdown correctamente formateado
     await update.message.reply_text(info, parse_mode="Markdown")
 
+
 # =============================================================================
-# 7. COMANDOS DE ADMINISTRACIÓN
+# 9. COMANDOS DE ADMINISTRACIÓN (renombrados, nuevos y listusers)
 # =============================================================================
 
-async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Renombrado: /add_access -> /adduseremail
+async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    /add_access <user_id> <correo> <dias>
+    /adduseremail <user_id> <correo> <dias>
     Añade o extiende el acceso a <correo> para el user_id especificado.
     """
     admin_user_id = update.effective_user.id
-    user_log(admin_user_id, f"/add_access con args: {context.args}")
+    user_log(admin_user_id, f"/adduseremail con args: {context.args}")
 
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
@@ -876,9 +929,10 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     args = context.args
     if len(args) < 3:
-        await update.message.reply_text("Uso: /add_access <user_id> <correo> <días>")
+        await update.message.reply_text("Uso: /adduseremail <user_id> <correo> <días>")
         return
 
+    # user_id
     try:
         target_user_id = int(args[0])
     except ValueError:
@@ -886,6 +940,8 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     email_arg = args[1].lower()
+
+    # días de acceso
     try:
         days = int(args[2])
     except ValueError:
@@ -907,19 +963,21 @@ async def add_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users_dict[target_user_id][email_arg] = new_exp
     save_users(users_dict)
 
+    email_esc = escape_markdown(email_arg)
     await update.message.reply_text(
-        f"✅ Se ha asignado/extendido acceso a *{email_arg}* "
-        f"para el usuario {target_user_id}.\n"
-        f"Expira el {new_exp.isoformat()}."
+        f"✅ Se ha asignado/extendido acceso a *{email_esc}* "
+        f"para el usuario {target_user_id}.\nExpira el {new_exp.isoformat()}.",
+        parse_mode="Markdown"
     )
 
-async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Renombrado: /remove_access -> /removeemail
+async def removeemail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    /remove_access <user_id> <correo1> [<correo2> ...]
-    Elimina correos de la lista de un user_id.
+    /removeemail <user_id> <correo1> [<correo2> ...]
+    Elimina uno o varios correos asignados a un usuario (ID).
     """
     admin_user_id = update.effective_user.id
-    user_log(admin_user_id, f"/remove_access con args: {context.args}")
+    user_log(admin_user_id, f"/removeemail con args: {context.args}")
 
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
@@ -927,7 +985,7 @@ async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     args = context.args
     if len(args) < 2:
-        await update.message.reply_text("Uso: /remove_access <user_id> <correo1> [<correo2> ...]")
+        await update.message.reply_text("Uso: /removeemail <user_id> <correo1> [<correo2> ...]")
         return
 
     try:
@@ -958,21 +1016,218 @@ async def remove_access(update: Update, context: ContextTypes.DEFAULT_TYPE):
     save_users(users_dict)
 
     if removed:
+        removed_str = "\n".join(removed)
         await update.message.reply_text(
-            f"Se han eliminado los siguientes correos de {target_user_id}:\n" +
-            "\n".join(removed)
+            f"Se han eliminado los siguientes correos de {target_user_id}:\n{removed_str}"
         )
     else:
         await update.message.reply_text(
             f"⚠️ Ninguno de los correos proporcionados estaba asignado al usuario {target_user_id}."
         )
 
-async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Nuevo: /removeusertotal
+async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    Lista todos los user_id y los correos que tienen, con fecha de expiración.
+    /removeusertotal <user_id>
+    Elimina completamente al usuario (y sus correos) de la base de datos.
+    También elimina su permiso de extraer códigos (si lo tuviera).
     """
     admin_user_id = update.effective_user.id
-    user_log(admin_user_id, "/list_users")
+    user_log(admin_user_id, f"/removeusertotal con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Uso: /removeusertotal <user_id>")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El argumento debe ser un número (user_id).")
+        return
+
+    users_dict = load_users()
+    if target_user_id not in users_dict:
+        await update.message.reply_text(
+            f"El usuario {target_user_id} no existe en la base de datos."
+        )
+        return
+
+    # Borramos de users_db
+    del users_dict[target_user_id]
+    save_users(users_dict)
+
+    # Borramos también de code_access_db
+    code_dict = load_code_access()
+    if target_user_id in code_dict:
+        del code_dict[target_user_id]
+        save_code_access(code_dict)
+
+    await update.message.reply_text(
+        f"✅ Usuario {target_user_id} eliminado completamente."
+    )
+
+# Nuevo: /accesscode
+async def accesscode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /accesscode <user_id> <días>
+    Otorga permiso de EXTRAER CÓDIGOS a un usuario. 
+    Si días <= 0 => acceso indefinido.
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/accesscode con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 2:
+        await update.message.reply_text("Uso: /accesscode <user_id> <días>")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El primer argumento debe ser un número (user_id).")
+        return
+
+    try:
+        days = int(context.args[1])
+    except ValueError:
+        await update.message.reply_text("El segundo argumento debe ser un número entero (días).")
+        return
+
+    code_dict = load_code_access()
+    if days <= 0:
+        # acceso ilimitado
+        code_dict[target_user_id] = None
+        save_code_access(code_dict)
+        await update.message.reply_text(
+            f"✅ Se otorgó acceso para extraer códigos a {target_user_id} de forma *ilimitada*.",
+            parse_mode="Markdown"
+        )
+    else:
+        today = datetime.now().date()
+        new_exp = today + timedelta(days=days)
+        code_dict[target_user_id] = new_exp
+        save_code_access(code_dict)
+        await update.message.reply_text(
+            f"✅ Se otorgó acceso de extracción de códigos a {target_user_id} hasta {new_exp.isoformat()}.",
+            parse_mode="Markdown"
+        )
+
+# Nuevo: /removecode
+async def removecode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /removecode <user_id>
+    Revoca el permiso de extraer códigos a un usuario.
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/removecode con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Uso: /removecode <user_id>")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El argumento debe ser un número (user_id).")
+        return
+
+    code_dict = load_code_access()
+    if target_user_id in code_dict:
+        del code_dict[target_user_id]
+        save_code_access(code_dict)
+        await update.message.reply_text(
+            f"✅ Se ha removido el permiso de extraer códigos de {target_user_id}."
+        )
+    else:
+        await update.message.reply_text(
+            f"⚠️ El usuario {target_user_id} no tenía permiso de extraer códigos."
+        )
+
+# Nuevo: /showuser
+async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /showuser <user_id>
+    Muestra toda la información de un usuario: correos y permisos de código.
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/showuser con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Uso: /showuser <user_id>")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El argumento debe ser un número (user_id).")
+        return
+
+    users_dict = load_users()
+    code_dict = load_code_access()
+
+    # Escapamos solo el ID dinámico
+    target_user_id_esc = escape_markdown(str(target_user_id))
+
+    msg = [f"**📋 Información de usuario:** `{target_user_id_esc}`\n"]
+
+    # 📧 **Correos asignados**
+    if target_user_id not in users_dict or not users_dict[target_user_id]:
+        msg.append("❌ *No tiene correos asignados.*")
+    else:
+        msg.append("📧 **Correos asignados:**")
+        for mail, exp_date in users_dict[target_user_id].items():
+            mail_esc = escape_markdown(mail)
+            if exp_date is None:
+                msg.append(f"  - `{mail_esc}`: acceso *ilimitado* ✅")
+            else:
+                delta = (exp_date - datetime.now().date()).days
+                if delta < 0:
+                    msg.append(f"  - `{mail_esc}`: ❌ **Expirado** (expiró el {exp_date})")
+                else:
+                    msg.append(f"  - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date})")
+
+    # 🔑 **Permiso para extraer códigos**
+    if target_user_id in code_dict:
+        exp_date = code_dict[target_user_id]
+        if exp_date is None:
+            msg.append("\n🔑 **Permiso de extraer códigos:** *ilimitado* ✅")
+        else:
+            delta = (exp_date - datetime.now().date()).days
+            if delta < 0:
+                msg.append(f"\n🔑 **Permiso de extraer códigos:** ❌ *Expirado* (expiró el {exp_date}).")
+            else:
+                msg.append(f"\n🔑 **Permiso de extraer códigos:** \n⏳ *Válido hasta {exp_date}* (faltan {delta} días).")
+    else:
+        msg.append("\n🔑 **Permiso de extraer códigos:** ❌ *No tiene acceso*.")
+
+    # Unimos el mensaje correctamente sin escapar el formato Markdown
+    final_text = "\n".join(msg)
+
+    await update.message.reply_text(final_text, parse_mode="Markdown")
+
+# /listusers
+async def listusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /listusers
+    Lista todos los usuarios en la base de datos y sus correos.
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, "/listusers")
 
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
@@ -991,21 +1246,24 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         detalles = []
         for mail, exp_date in emails_dict.items():
+            mail_esc = escape_markdown(mail)
             if exp_date is None:
-                detalles.append(f"{mail} (ilimitado)")
+                detalles.append(f"{mail_esc} (ilimitado)")
             else:
                 delta = (exp_date - datetime.now().date()).days
                 if delta < 0:
-                    detalles.append(f"{mail} (expirado {exp_date.isoformat()})")
+                    detalles.append(f"{mail_esc} (expirado {exp_date.isoformat()})")
                 else:
-                    detalles.append(f"{mail} (expira {exp_date.isoformat()} / faltan {delta} días)")
+                    detalles.append(f"{mail_esc} (expira {exp_date.isoformat()}, faltan {delta} días)")
         detalles_str = "; ".join(detalles)
         msg.append(f"- **UserID**: `{uid}` | {detalles_str}")
 
-    await update.message.reply_text("\n".join(msg), parse_mode="Markdown")
+        final_text = "\n".join(msg)
+    await update.message.reply_text(final_text, parse_mode="Markdown")
+
 
 # =============================================================================
-# 8. MAIN
+# 10. MAIN
 # =============================================================================
 
 if __name__ == "__main__":
@@ -1032,10 +1290,14 @@ if __name__ == "__main__":
     # /mi_perfil
     application.add_handler(CommandHandler("mi_perfil", mi_perfil))
 
-    # Admin
-    application.add_handler(CommandHandler("add_access", add_access))
-    application.add_handler(CommandHandler("remove_access", remove_access))
-    application.add_handler(CommandHandler("list_users", list_users))
+    # Admin commands
+    application.add_handler(CommandHandler("adduseremail", adduseremail))
+    application.add_handler(CommandHandler("removeemail", removeemail))
+    application.add_handler(CommandHandler("removeusertotal", removeusertotal))
+    application.add_handler(CommandHandler("accesscode", accesscode))
+    application.add_handler(CommandHandler("removecode", removecode))
+    application.add_handler(CommandHandler("showuser", showuser))
+    application.add_handler(CommandHandler("listusers", listusers))
 
     # Ejecuta el bot
     application.run_polling()
