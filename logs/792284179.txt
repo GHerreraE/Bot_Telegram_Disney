@@ -1,0 +1,5 @@
+2025-02-07 11:28:52.076057: /start
+2025-02-07 11:28:56.610977: Seleccionó Disney+
+2025-02-07 11:29:03.166765: Operación cancelada
+2025-02-07 11:29:05.236086: Seleccionó Netflix (submenú)
+2025-02-07 11:29:10.672684: Netflix => Link Restablecimiento
