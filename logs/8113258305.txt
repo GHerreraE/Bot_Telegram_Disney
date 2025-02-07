@@ -32,3 +32,15 @@
 2025-02-07 18:35:02.192330: /listusers
 2025-02-07 18:42:44.510484: /mi_perfil
 2025-02-07 18:42:55.154833: /listusers
+2025-02-07 19:00:23.911661: /start
+2025-02-07 19:00:26.142363: Seleccionó Netflix (submenú)
+2025-02-07 19:00:27.923513: Operación cancelada
+2025-02-07 19:00:29.383449: Ayuda
+2025-02-07 19:00:48.488726: Volvió al menú principal
+2025-02-07 19:21:14.423383: Ayuda
+2025-02-07 19:21:15.805498: Volvió al menú principal
+2025-02-07 19:21:17.324532: Seleccionó Disney+
+2025-02-07 19:21:18.893580: Operación cancelada
+2025-02-07 19:21:20.192247: Seleccionó Netflix (submenú)
+2025-02-07 19:21:22.606093: Operación cancelada
+2025-02-07 19:21:35.769703: /showuser con args: []
