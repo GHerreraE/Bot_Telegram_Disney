@@ -1,0 +1,24 @@
+2025-02-07 22:31:16.701449: /start
+2025-02-07 22:31:19.906758: Seleccionó Disney+
+2025-02-07 22:31:39.170567: Ingresó correo 'CUENTA nueva 
+
+disneycito26@dmarcial.com
+Clave: Disney1800.
+
+Perfil 1
+
+
+
+- Puedes cambiar los perfiles, la contrasena igual.
+- Renovable cada 30 dias, el aviso sera dias antes.
+- Si el pago para el mes siguiente no esta hecho para el dia 30, entoces se hara corte al dia siguiente.
+- Mientras estes al dia de los pagos, no deberia haber problemas con la cuenta, en caso de tenerlo, comunicate conmigo para poder darte soporte.' para disney
+2025-02-07 22:31:39.221347: Acceso denegado o expirado al correo
+2025-02-07 22:32:10.506754: Operación cancelada
+2025-02-07 22:32:12.843897: Seleccionó Disney+
+2025-02-07 22:32:19.426139: Ingresó correo 'disneycito26@dmarcial.com' para disney
+2025-02-07 22:32:19.427868: Acceso denegado o expirado al correo
+2025-02-07 22:35:17.550247: Operación cancelada
+2025-02-07 22:35:21.394903: /mi_perfil
+2025-02-07 22:37:00.752220: Seleccionó Disney+
+2025-02-07 22:37:06.028266: Ingresó correo 'disneycito26@dmarcial.com' para disney
