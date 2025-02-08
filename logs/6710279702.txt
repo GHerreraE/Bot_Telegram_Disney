@@ -1,0 +1,4 @@
+2025-02-08 18:08:48.514172: /start
+2025-02-08 18:08:52.890439: Seleccionó Disney+
+2025-02-08 18:08:58.180460: Ingresó correo 'disneycito29@dmarcial.com' para disney
+2025-02-08 18:08:58.181928: Acceso denegado o expirado al correo
