@@ -1,0 +1,4 @@
+2025-02-08 01:33:24.128613: /start
+2025-02-08 01:33:26.469678: Seleccionó Disney+
+2025-02-08 01:33:31.081745: Ingresó correo 'disneycito27@dmarcial.com' para disney
+2025-02-08 01:33:32.085045: Código Disney: 449399
