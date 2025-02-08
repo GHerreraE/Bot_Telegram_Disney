@@ -2,3 +2,16 @@
 2025-02-08 18:08:52.890439: Seleccionó Disney+
 2025-02-08 18:08:58.180460: Ingresó correo 'disneycito29@dmarcial.com' para disney
 2025-02-08 18:08:58.181928: Acceso denegado o expirado al correo
+2025-02-08 19:19:32.923994: Operación cancelada
+2025-02-08 19:19:35.581473: Seleccionó Disney+
+2025-02-08 19:21:10.789075: Ingresó correo 'logs\6710279702.txt' para disney
+2025-02-08 19:21:10.790652: Acceso denegado o expirado al correo
+2025-02-08 19:35:17.011289: /mi_perfil
+2025-02-08 20:01:13.856233: /start
+2025-02-08 20:01:16.359200: Seleccionó Disney+
+2025-02-08 20:01:39.669031: Ingresó correo 'disneycito29@dmarcial.com' para disney
+2025-02-08 20:01:40.871839: Código Disney: 688231
+2025-02-08 20:02:13.293710: /start
+2025-02-08 20:02:15.270464: Seleccionó Disney+
+2025-02-08 20:02:18.072599: Ingresó correo 'disneycito29@dmarcial.com' para disney
+2025-02-08 20:02:19.024890: Código Disney: 361448
