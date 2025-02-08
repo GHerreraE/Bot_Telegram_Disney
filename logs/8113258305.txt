@@ -62,3 +62,7 @@
 2025-02-08 03:45:40.925266: /help
 2025-02-08 03:45:43.715141: /showuser con args: []
 2025-02-08 03:45:47.566846: /listusers
+2025-02-08 11:43:28.550976: /adduseremail con args: []
+2025-02-08 11:48:49.992575: /adduseremail con args: []
+2025-02-08 11:49:11.106501: /adduseremail con args: ['12345678', 'corre1@gmail.com', 'correo2@gmail.com', '30']
+2025-02-08 11:52:02.182057: /removeusertotal con args: ['12345678']

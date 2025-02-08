@@ -917,8 +917,8 @@ async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Renombrado: /add_access -> /adduseremail
 async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    /adduseremail <user_id> <correo> <dias>
-    Añade o extiende el acceso a <correo> para el user_id especificado.
+    /adduseremail <user_id> <correo1> [<correo2> ... <correoN>] <días>
+    Añade o extiende el acceso a los correos especificados para el user_id indicado.
     """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/adduseremail con args: {context.args}")
@@ -928,24 +928,29 @@ async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     args = context.args
+    # Se requiere al menos un user_id, un correo y el número de días
     if len(args) < 3:
-        await update.message.reply_text("Uso: /adduseremail <user_id> <correo> <días>")
+        await update.message.reply_text("Uso: /adduseremail <user_id> <correo1> [<correo2> ...] <días>")
         return
 
-    # user_id
+    # El primer argumento es el user_id
     try:
         target_user_id = int(args[0])
     except ValueError:
         await update.message.reply_text("El primer argumento debe ser un número (user_id).")
         return
 
-    email_arg = args[1].lower()
-
-    # días de acceso
+    # El último argumento es la cantidad de días
     try:
-        days = int(args[2])
+        days = int(args[-1])
     except ValueError:
-        await update.message.reply_text("El tercer argumento debe ser un número entero (días).")
+        await update.message.reply_text("El último argumento debe ser un número entero (días).")
+        return
+
+    # Los argumentos intermedios son los correos a asignar
+    emails = [email_arg.lower().strip() for email_arg in args[1:-1]]
+    if not emails:
+        await update.message.reply_text("Debes especificar al menos un correo.")
         return
 
     users_dict = load_users()
@@ -953,21 +958,23 @@ async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users_dict[target_user_id] = {}
 
     today = datetime.now().date()
-    current_exp = users_dict[target_user_id].get(email_arg)
-    if current_exp is None:
-        base_date = today
-    else:
-        base_date = max(today, current_exp)
 
-    new_exp = base_date + timedelta(days=days)
-    users_dict[target_user_id][email_arg] = new_exp
+    results = []
+    for email_arg in emails:
+        current_exp = users_dict[target_user_id].get(email_arg)
+        if current_exp is None:
+            base_date = today
+        else:
+            base_date = max(today, current_exp)
+        new_exp = base_date + timedelta(days=days)
+        users_dict[target_user_id][email_arg] = new_exp
+        results.append(f"{email_arg}: expira el {new_exp.isoformat()}")
+
     save_users(users_dict)
 
-    email_esc = escape_markdown(email_arg)
+    result_text = "\n".join(results)
     await update.message.reply_text(
-        f"✅ Se ha asignado/extendido acceso a *{email_esc}* "
-        f"para el usuario {target_user_id}.\nExpira el {new_exp.isoformat()}.",
-        parse_mode="Markdown"
+        f"✅ Se ha asignado/extendido acceso a los siguientes correos para el usuario {target_user_id}:\n{result_text}"
     )
 
 # Renombrado: /remove_access -> /removeemail
