@@ -1,0 +1,4 @@
+2025-02-08 04:15:27.220246: /start
+2025-02-08 04:15:29.130924: Seleccionó Disney+
+2025-02-08 04:15:30.432798: Ingresó correo 'disneycito23@dmarcial.com' para disney
+2025-02-08 04:15:31.398762: Código Disney: 917901
