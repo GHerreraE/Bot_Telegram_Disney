@@ -166,3 +166,48 @@
 2025-02-09 18:42:24.512151: Seleccionó Netflix (submenú)
 2025-02-09 18:42:26.045722: Netflix => País/Idioma
 2025-02-09 18:42:27.095285: Ingresó correo 'correoquenoexiste@dmarcial.com' para netflix_country_info
+2025-02-09 18:53:42.821033: /start
+2025-02-09 18:54:06.624018: Seleccionó Disney+
+2025-02-09 18:54:23.385102: Ingresó correo 'Dormir.neto@dereck.pro' para disney
+2025-02-09 18:55:34.210296: No hay operación activa al hacer /cancel
+2025-02-09 18:56:17.704493: /start
+2025-02-09 18:56:20.667915: Seleccionó Disney+
+2025-02-09 18:56:25.389227: Ingresó correo 'Dormir.neto@dereck.pro' para disney
+2025-02-09 18:56:51.187050: /start
+2025-02-09 18:57:07.029474: Seleccionó Netflix (submenú)
+2025-02-09 18:57:08.989606: Netflix => País/Idioma
+2025-02-09 18:57:11.445803: Ingresó correo 'Dormir.neto@dereck.pro' para netflix_country_info
+2025-02-09 19:55:00.356235: /start
+2025-02-09 19:55:01.820626: Seleccionó Netflix (submenú)
+2025-02-09 19:55:03.944232: Netflix => Código Único (4 díg.)
+2025-02-09 20:05:42.320364: /start
+2025-02-09 20:05:44.354916: Seleccionó Disney+
+2025-02-09 20:05:51.923856: Ingresó correo 'disneycito23@dmarcial.com' para disney
+2025-02-09 20:05:53.236309: Código Disney: 845906
+2025-02-09 20:06:08.950919: /start
+2025-02-09 20:06:11.330934: Seleccionó Netflix (submenú)
+2025-02-09 20:06:14.214524: Netflix => Link Restablecimiento
+2025-02-09 20:07:17.421066: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-09 20:07:19.800622: Link Netflix: https://www.netflix.com/password?g=c58b2850-7881-4db1-9075-0840873e7011&lkid=URL_ACCOUNT_PASSWORD_CHANGE&lnktrk=EVO&nftoken=BgjolOvcAxKjAVawKKS2yRp5otGaWwRT7chvxybgYBtqV%2B9d5kUnwbWGLkHlkucCF8z5v37oa8FPGNRQp8BizZ8NYLM9o94ChaUOsXp8oQ0pzaOAcYfXvWfSu38DVSggVdJAo2rDmhkpNhTRW9WUC7VM4eJBGXGXB77M1yFWJ07DGzzu7KCunZs4HmYJOrHk8rLFX1rMyv6BQc%2F8lcSRflQj43omSlmBKgeQLhQYBiIOCgyXq3zl1HEkAwwfW20%3D
+2025-02-09 20:07:26.128761: /start
+2025-02-09 20:07:28.330676: Seleccionó Netflix (submenú)
+2025-02-09 20:07:30.554047: Netflix => Código Único (4 díg.)
+2025-02-09 20:07:32.132936: Ingresó correo 'netflixito01@dmarcial.com' para netflix_access_code
+2025-02-09 20:07:34.184210: Código Netflix 4 díg.: 7881
+2025-02-09 20:07:37.437959: /start
+2025-02-09 20:07:38.733449: Seleccionó Netflix (submenú)
+2025-02-09 20:07:40.424940: Netflix => País/Idioma
+2025-02-09 20:07:41.444658: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-09 20:07:43.493486: País/Idioma Netflix: es, CL
+2025-02-09 20:07:45.790998: /start
+2025-02-09 20:07:47.792625: Seleccionó Netflix (submenú)
+2025-02-09 20:07:50.611447: Netflix => Código Acceso Temporal
+2025-02-09 20:07:51.869820: Ingresó correo 'netflixito01@dmarcial.com' para netflix_temporary_access
+2025-02-09 20:07:58.438822: /start
+2025-02-09 20:08:00.721638: Seleccionó Netflix (submenú)
+2025-02-09 20:08:03.981031: Netflix => Código Actualiza Hogar
+2025-02-09 20:08:06.051914: Ingresó correo 'netflixito01@dmarcial.com' para netflix_update_household
+2025-02-09 20:08:08.324992: Link Netflix (Actualizar Hogar): https://www.netflix.com/account/update-primary-location?nftoken=BgjolOvcAxKkAUNhjJHJs5zt1MbtWDQzHJaaqSrxZtlA4ykdpKmadSJ1HyyVIdnmw9ddZQez/wyOLHxuqf3N4PFmIDXoKAJqtfkvG0eXAOk6DIqIBeoP5gvvrVhsfDY+3SKCnl7k/jx/YGy3QECzR48Z/k3IrXJHayvbfE+SXMrKXGIJNbGWhlCBVjgkw+7YT/V6zliymlmEQI3ReVj0kIYtHLwFDdpqh86hPGFfGAYiDgoMQfdjRG+vkm3+TZr8&g=41194887-5d18-49a4-aa3d-2a96a0402622&lnktrk=EVO&operation=update&lkid=UPDATE_HOUSEHOLD_REQUESTED_OTP_CTA]
+2025-02-09 20:09:01.935738: /start
+2025-02-09 20:09:04.814285: Seleccionó Netflix (submenú)
+2025-02-09 20:09:06.733178: Netflix => País/Idioma

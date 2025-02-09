@@ -93,6 +93,36 @@ HELP_TEXT = (
 )
 
 # =============================================================================
+# 1.1. CARGAR DOMINIOS PERMITIDOS DESDE admin_imap_pass.txt
+# =============================================================================
+
+def load_allowed_domains(filename='admin_imap_pass.txt'):
+    """
+    Lee el archivo de cuentas y extrae los dominios permitidos (la parte después de '@').
+    Retorna un conjunto con los dominios en minúsculas.
+    """
+    allowed_domains = set()
+    if not os.path.exists(filename):
+        logging.error(f"No se encontró el archivo {filename} para cargar los dominios permitidos.")
+        return allowed_domains
+
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if '|' not in line:
+                continue
+            email_str, _ = line.split("|", 1)
+            email_str = email_str.strip().lower()
+            if "@" in email_str:
+                domain = email_str.split("@")[-1]
+                allowed_domains.add(domain)
+    return allowed_domains
+
+ALLOWED_EMAIL_DOMAINS = load_allowed_domains()
+
+# =============================================================================
 # 2. LOGS CON COLORES
 # =============================================================================
 
@@ -274,13 +304,15 @@ def get_disney_code(requested_email: str):
                     if isinstance(response_part, tuple):
                         msg_obj = email.message_from_bytes(response_part[1])
 
+                        # Extraer destinatarios y normalizarlos
                         recipients = []
                         for header_key, header_value in msg_obj.items():
                             if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
                                 if header_value:
-                                    recipients.append(header_value.lower())
-
-                        if requested_email.lower() not in "\n".join(recipients):
+                                    recipients.extend([addr.strip().lower() for addr in header_value.split(",")])
+                        
+                        # Se requiere coincidencia exacta con el correo solicitado
+                        if not any(recipient == requested_email for recipient in recipients):
                             continue
 
                         date_header = msg_obj["Date"]
@@ -370,14 +402,14 @@ def _search_netflix_email(requested_email: str, parse_function):
                 for response_part in msg_data:
                     if isinstance(response_part, tuple):
                         msg_obj = email.message_from_bytes(response_part[1])
-
+                        
                         recipients = []
                         for header_key, header_value in msg_obj.items():
                             if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
                                 if header_value:
-                                    recipients.append(header_value.lower())
-
-                        if requested_email.lower() not in "\n".join(recipients):
+                                    recipients.extend([addr.strip().lower() for addr in header_value.split(",")])
+                        
+                        if not any(recipient == requested_email for recipient in recipients):
                             continue
 
                         date_header = msg_obj["Date"]
@@ -528,7 +560,6 @@ def escape_markdown(text: str) -> str:
     """
     Escapa los caracteres que podrían causar problemas en Markdown (versión 1).
     """
-    # Escapamos: '_', '*', '`', '['
     text = text.replace("_", "\\_")
     text = text.replace("*", "\\*")
     text = text.replace("`", "\\`")
@@ -651,20 +682,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_email_for'] = None
 
     elif query.data == "cancel":
-        user_log(user_id, "Operación cancelada")
-        keyboard = [
-            [
-                InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
-                InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
-            ],
-            [InlineKeyboardButton("Ayuda 💡", callback_data="help")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            text="Operación cancelada. Menú principal:",
-            reply_markup=reply_markup
-        )
-        context.user_data['awaiting_email_for'] = None
+        await cancel(update, context)
 
     elif query.data == "volver_menu":
         user_log(user_id, "Volvió al menú principal")
@@ -688,6 +706,20 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     awaiting = context.user_data.get('awaiting_email_for', None)
 
     if not awaiting:
+        return
+
+    # Validación del formato básico del correo
+    if "@" not in requested_email:
+        await update.message.reply_text("❌ El formato del correo es incorrecto.")
+        return
+
+    # Extraer y normalizar el dominio
+    requested_email = requested_email.lower().strip()
+    domain = requested_email.split("@")[-1]
+
+    # Validar que el dominio esté en la lista de dominios permitidos (extraída de admin_imap_pass.txt)
+    if domain not in ALLOWED_EMAIL_DOMAINS:
+        await update.message.reply_text("❌ El dominio del correo no es válido para esta búsqueda.")
         return
 
     user_log(user_id, f"Ingresó correo '{requested_email}' para {awaiting}")
@@ -830,21 +862,13 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_log(user_id, "No hay operación activa al hacer /cancel")
         await update.message.reply_text("No hay ninguna operación activa que cancelar.")
 
-# =============================================================================
-# 8. COMANDOS /help, /mi_perfil
-# =============================================================================
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Muestra el mensaje de ayuda con formato Markdown.
-    """
     user_id = update.effective_user.id
     user_log(user_id, "/help")
 
     keyboard = [[InlineKeyboardButton("Volver ↩️", callback_data="volver_menu")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # No escapamos todo el HELP_TEXT, ya que ya está correctamente formateado en Markdown.
     await update.message.reply_text(
         text=HELP_TEXT,
         parse_mode="Markdown",
@@ -853,22 +877,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data['awaiting_email_for'] = None
 
-
 async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Muestra la información del usuario: ID, correos y permisos de código.
-    """
     user_id = update.effective_user.id
     user_log(user_id, "/mi_perfil")
     users_dict = load_users()
 
-    # Escapar solo el user_id dinámico
     user_id_esc = escape_markdown(str(user_id))
-
-    # Mensaje inicial con negritas
     info = f"**Tu ID de Telegram:** `{user_id_esc}`\n\n"
 
-    # Verificar si tiene correos asignados
     if user_id not in users_dict or not users_dict[user_id]:
         info += "❌ No tienes correos asignados en la base de datos.\n"
     else:
@@ -884,7 +900,6 @@ async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     info += f" - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date.isoformat()})\n"
 
-    # Permiso de extracción de códigos
     if user_has_code_permission(user_id):
         code_dict = load_code_access()
         if user_id in code_dict:
@@ -902,24 +917,16 @@ async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         info += "\n❌ No tienes permiso para extraer códigos."
 
-    # Verificar si es administrador
     if is_admin(user_id):
         info += "\n\n👑 *Eres administrador*, con acceso total."
 
-    # Enviar mensaje con Markdown correctamente formateado
     await update.message.reply_text(info, parse_mode="Markdown")
 
-
 # =============================================================================
-# 9. COMANDOS DE ADMINISTRACIÓN (renombrados, nuevos y listusers)
+# 8. COMANDOS DE ADMINISTRACIÓN
 # =============================================================================
 
-# Renombrado: /add_access -> /adduseremail
 async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /adduseremail <user_id> <correo1> [<correo2> ... <correoN>] <días>
-    Añade o extiende el acceso a los correos especificados para el user_id indicado.
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/adduseremail con args: {context.args}")
 
@@ -928,26 +935,22 @@ async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     args = context.args
-    # Se requiere al menos un user_id, un correo y el número de días
     if len(args) < 3:
         await update.message.reply_text("Uso: /adduseremail <user_id> <correo1> [<correo2> ...] <días>")
         return
 
-    # El primer argumento es el user_id
     try:
         target_user_id = int(args[0])
     except ValueError:
         await update.message.reply_text("El primer argumento debe ser un número (user_id).")
         return
 
-    # El último argumento es la cantidad de días
     try:
         days = int(args[-1])
     except ValueError:
         await update.message.reply_text("El último argumento debe ser un número entero (días).")
         return
 
-    # Los argumentos intermedios son los correos a asignar
     emails = [email_arg.lower().strip() for email_arg in args[1:-1]]
     if not emails:
         await update.message.reply_text("Debes especificar al menos un correo.")
@@ -958,7 +961,6 @@ async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users_dict[target_user_id] = {}
 
     today = datetime.now().date()
-
     results = []
     for email_arg in emails:
         current_exp = users_dict[target_user_id].get(email_arg)
@@ -971,18 +973,12 @@ async def adduseremail(update: Update, context: ContextTypes.DEFAULT_TYPE):
         results.append(f"{email_arg}: expira el {new_exp.isoformat()}")
 
     save_users(users_dict)
-
     result_text = "\n".join(results)
     await update.message.reply_text(
         f"✅ Se ha asignado/extendido acceso a los siguientes correos para el usuario {target_user_id}:\n{result_text}"
     )
 
-# Renombrado: /remove_access -> /removeemail
 async def removeemail(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /removeemail <user_id> <correo1> [<correo2> ...]
-    Elimina uno o varios correos asignados a un usuario (ID).
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/removeemail con args: {context.args}")
 
@@ -1005,14 +1001,11 @@ async def removeemail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users_dict = load_users()
 
     if target_user_id not in users_dict:
-        await update.message.reply_text(
-            f"⚠️ El usuario {target_user_id} no existe en la base de datos."
-        )
+        await update.message.reply_text(f"⚠️ El usuario {target_user_id} no existe en la base de datos.")
         return
 
     current_emails = users_dict[target_user_id]
     removed = []
-
     for mail in emails_to_remove:
         mail_lower = mail.lower()
         if mail_lower in current_emails:
@@ -1024,21 +1017,11 @@ async def removeemail(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if removed:
         removed_str = "\n".join(removed)
-        await update.message.reply_text(
-            f"Se han eliminado los siguientes correos de {target_user_id}:\n{removed_str}"
-        )
+        await update.message.reply_text(f"Se han eliminado los siguientes correos de {target_user_id}:\n{removed_str}")
     else:
-        await update.message.reply_text(
-            f"⚠️ Ninguno de los correos proporcionados estaba asignado al usuario {target_user_id}."
-        )
+        await update.message.reply_text(f"⚠️ Ninguno de los correos proporcionados estaba asignado al usuario {target_user_id}.")
 
-# Nuevo: /removeusertotal
 async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /removeusertotal <user_id>
-    Elimina completamente al usuario (y sus correos) de la base de datos.
-    También elimina su permiso de extraer códigos (si lo tuviera).
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/removeusertotal con args: {context.args}")
 
@@ -1058,32 +1041,20 @@ async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     users_dict = load_users()
     if target_user_id not in users_dict:
-        await update.message.reply_text(
-            f"El usuario {target_user_id} no existe en la base de datos."
-        )
+        await update.message.reply_text(f"El usuario {target_user_id} no existe en la base de datos.")
         return
 
-    # Borramos de users_db
     del users_dict[target_user_id]
     save_users(users_dict)
 
-    # Borramos también de code_access_db
     code_dict = load_code_access()
     if target_user_id in code_dict:
         del code_dict[target_user_id]
         save_code_access(code_dict)
 
-    await update.message.reply_text(
-        f"✅ Usuario {target_user_id} eliminado completamente."
-    )
+    await update.message.reply_text(f"✅ Usuario {target_user_id} eliminado completamente.")
 
-# Nuevo: /accesscode
 async def accesscode(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /accesscode <user_id> <días>
-    Otorga permiso de EXTRAER CÓDIGOS a un usuario. 
-    Si días <= 0 => acceso indefinido.
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/accesscode con args: {context.args}")
 
@@ -1109,7 +1080,6 @@ async def accesscode(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     code_dict = load_code_access()
     if days <= 0:
-        # acceso ilimitado
         code_dict[target_user_id] = None
         save_code_access(code_dict)
         await update.message.reply_text(
@@ -1126,12 +1096,7 @@ async def accesscode(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
 
-# Nuevo: /removecode
 async def removecode(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /removecode <user_id>
-    Revoca el permiso de extraer códigos a un usuario.
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/removecode con args: {context.args}")
 
@@ -1153,20 +1118,11 @@ async def removecode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if target_user_id in code_dict:
         del code_dict[target_user_id]
         save_code_access(code_dict)
-        await update.message.reply_text(
-            f"✅ Se ha removido el permiso de extraer códigos de {target_user_id}."
-        )
+        await update.message.reply_text(f"✅ Se ha removido el permiso de extraer códigos de {target_user_id}.")
     else:
-        await update.message.reply_text(
-            f"⚠️ El usuario {target_user_id} no tenía permiso de extraer códigos."
-        )
+        await update.message.reply_text(f"⚠️ El usuario {target_user_id} no tenía permiso de extraer códigos.")
 
-# Nuevo: /showuser
 async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /showuser <user_id>
-    Muestra toda la información de un usuario: correos y permisos de código.
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/showuser con args: {context.args}")
 
@@ -1187,12 +1143,9 @@ async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users_dict = load_users()
     code_dict = load_code_access()
 
-    # Escapamos solo el ID dinámico
     target_user_id_esc = escape_markdown(str(target_user_id))
-
     msg = [f"**📋 Información de usuario:** `{target_user_id_esc}`\n"]
 
-    # 📧 **Correos asignados**
     if target_user_id not in users_dict or not users_dict[target_user_id]:
         msg.append("❌ *No tiene correos asignados.*")
     else:
@@ -1208,7 +1161,6 @@ async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     msg.append(f"  - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date})")
 
-    # 🔑 **Permiso para extraer códigos**
     if target_user_id in code_dict:
         exp_date = code_dict[target_user_id]
         if exp_date is None:
@@ -1222,17 +1174,10 @@ async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         msg.append("\n🔑 **Permiso de extraer códigos:** ❌ *No tiene acceso*.")
 
-    # Unimos el mensaje correctamente sin escapar el formato Markdown
     final_text = "\n".join(msg)
-
     await update.message.reply_text(final_text, parse_mode="Markdown")
 
-# /listusers
 async def listusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    /listusers
-    Lista todos los usuarios en la base de datos y sus correos.
-    """
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, "/listusers")
 
@@ -1265,12 +1210,11 @@ async def listusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
         detalles_str = "; ".join(detalles)
         msg.append(f"- **UserID**: `{uid}` | {detalles_str}")
 
-        final_text = "\n".join(msg)
+    final_text = "\n".join(msg)
     await update.message.reply_text(final_text, parse_mode="Markdown")
 
-
 # =============================================================================
-# 10. MAIN
+# 9. MAIN
 # =============================================================================
 
 if __name__ == "__main__":
