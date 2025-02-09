@@ -1,0 +1,9 @@
+2025-02-09 15:40:56.125404: /start
+2025-02-09 15:40:58.761094: Seleccionó Disney+
+2025-02-09 15:41:34.349640: Ingresó correo 'disneycito32@dmarcial.com' para disney
+2025-02-09 15:41:34.362197: Acceso denegado o expirado al correo
+2025-02-09 15:42:23.129610: /mi_perfil
+2025-02-09 15:45:53.362776: /start
+2025-02-09 15:45:55.552227: Seleccionó Disney+
+2025-02-09 15:46:01.005753: Ingresó correo 'disneycito32@dmarcial.com' para disney
+2025-02-09 15:46:02.251666: Código Disney: 287117

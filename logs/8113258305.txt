@@ -105,3 +105,22 @@
 2025-02-08 19:40:52.402248: /showuser con args: ['6710279702']
 2025-02-08 19:49:19.279223: /showuser con args: ['6710279702']
 2025-02-08 19:55:49.881117: /listusers
+2025-02-09 14:46:22.541463: /start
+2025-02-09 14:46:25.399186: Seleccionó Netflix (submenú)
+2025-02-09 14:46:26.944649: Operación cancelada
+2025-02-09 14:46:28.284182: Ayuda
+2025-02-09 14:46:32.183178: Volvió al menú principal
+2025-02-09 14:46:33.724028: Seleccionó Netflix (submenú)
+2025-02-09 14:46:40.853372: Netflix => Link Restablecimiento
+2025-02-09 14:46:48.360008: Operación cancelada
+2025-02-09 15:07:23.985276: /help
+2025-02-09 15:07:26.330180: Volvió al menú principal
+2025-02-09 15:07:28.496615: Seleccionó Disney+
+2025-02-09 15:07:33.274149: Operación cancelada
+2025-02-09 15:44:00.185706: /adduseremail con args: ['5205056453', 'disneycito32@dmarcial.com', '30']
+2025-02-09 15:44:14.021567: /accesscode con args: ['5205056453', '30']
+2025-02-09 15:45:26.420171: /start
+2025-02-09 15:45:28.411059: Seleccionó Disney+
+2025-02-09 15:45:37.017508: Ingresó correo 'disneycito32@dmarcial.com' para disney
+2025-02-09 15:45:38.259349: Código Disney: 287117
+2025-02-09 15:45:47.731277: /listusers
