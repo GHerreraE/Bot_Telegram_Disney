@@ -124,3 +124,45 @@
 2025-02-09 15:45:37.017508: Ingresó correo 'disneycito32@dmarcial.com' para disney
 2025-02-09 15:45:38.259349: Código Disney: 287117
 2025-02-09 15:45:47.731277: /listusers
+2025-02-09 17:38:16.512217: /start
+2025-02-09 17:38:38.614968: Seleccionó Netflix (submenú)
+2025-02-09 17:42:44.614748: Operación cancelada
+2025-02-09 17:42:46.937538: Seleccionó Disney+
+2025-02-09 17:42:48.266244: Operación cancelada
+2025-02-09 17:42:49.451697: Seleccionó Netflix (submenú)
+2025-02-09 17:42:51.360069: Operación cancelada
+2025-02-09 17:42:52.618508: Ayuda
+2025-02-09 17:42:56.757346: Volvió al menú principal
+2025-02-09 17:57:59.021538: Seleccionó Disney+
+2025-02-09 17:58:00.351710: Ingresó correo 'disneycito30@dmarcial.com' para disney
+2025-02-09 17:58:01.329209: Código Disney: 367987
+2025-02-09 18:12:34.283976: /listusers
+2025-02-09 18:30:09.831838: /start
+2025-02-09 18:30:11.501655: Seleccionó Netflix (submenú)
+2025-02-09 18:30:13.286856: Netflix => País/Idioma
+2025-02-09 18:30:22.355191: Ingresó correo 'test@dmasda.com' para netflix_country_info
+2025-02-09 18:30:50.745987: /start
+2025-02-09 18:30:52.233357: Seleccionó Netflix (submenú)
+2025-02-09 18:30:54.169640: Netflix => País/Idioma
+2025-02-09 18:30:57.724002: Ingresó correo 'Test@dmasda.com' para netflix_country_info
+2025-02-09 18:32:31.245670: /start
+2025-02-09 18:32:32.832025: Seleccionó Netflix (submenú)
+2025-02-09 18:32:34.276392: Netflix => País/Idioma
+2025-02-09 18:32:42.690742: Ingresó correo 'netflixito03@dmarcial.com' para netflix_country_info
+2025-02-09 18:32:44.100764: País/Idioma Netflix: fr, PH
+2025-02-09 18:37:20.997705: /start
+2025-02-09 18:37:23.497019: Seleccionó Netflix (submenú)
+2025-02-09 18:37:25.474831: Netflix => País/Idioma
+2025-02-09 18:37:32.210732: Ingresó correo 'test.test1@dmarcial.com' para netflix_country_info
+2025-02-09 18:38:26.535544: /start
+2025-02-09 18:38:28.094932: Seleccionó Netflix (submenú)
+2025-02-09 18:38:30.488196: Netflix => País/Idioma
+2025-02-09 18:38:32.227476: Ingresó correo 'Dormir.neto@samuelinho.com' para netflix_country_info
+2025-02-09 18:39:30.703872: /start
+2025-02-09 18:39:32.412759: Seleccionó Netflix (submenú)
+2025-02-09 18:39:33.678759: Netflix => País/Idioma
+2025-02-09 18:39:34.691163: Ingresó correo 'Dormir.neto@dmarcial.com' para netflix_country_info
+2025-02-09 18:42:22.338246: /start
+2025-02-09 18:42:24.512151: Seleccionó Netflix (submenú)
+2025-02-09 18:42:26.045722: Netflix => País/Idioma
+2025-02-09 18:42:27.095285: Ingresó correo 'correoquenoexiste@dmarcial.com' para netflix_country_info
