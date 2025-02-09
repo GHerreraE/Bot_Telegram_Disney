@@ -30,3 +30,7 @@ Perfil 1
 2025-02-07 23:19:06.903504: Seleccionó Disney+
 2025-02-07 23:19:13.519238: Ingresó correo 'disneycito26@dmarcial.com' para disney
 2025-02-07 23:19:14.749757: Código Disney: 886208
+2025-02-08 23:28:47.673648: Operación cancelada
+2025-02-08 23:28:49.196932: Seleccionó Disney+
+2025-02-08 23:28:53.623728: Ingresó correo 'disneycito26@dmarcial.com' para disney
+2025-02-08 23:28:54.608784: Código Disney: 324015
