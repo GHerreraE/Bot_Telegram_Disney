@@ -1213,6 +1213,81 @@ async def listusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     final_text = "\n".join(msg)
     await update.message.reply_text(final_text, parse_mode="Markdown")
 
+async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/addadmin con args: {context.args}")
+
+    # Solo un admin puede agregar a nuevos administradores
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Uso: /addadmin <idtelegram>")
+        return
+
+    try:
+        new_admin_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El ID debe ser un número entero.")
+        return
+
+    if new_admin_id in ADMIN_IDS:
+        await update.message.reply_text("❌ Este usuario ya es administrador.")
+        return
+
+    # Se agrega el nuevo admin al archivo y a la variable global
+    try:
+        with open("admin_ids.txt", "a", encoding="utf-8") as f:
+            f.write(f"{new_admin_id}\n")
+        ADMIN_IDS.append(new_admin_id)
+    except Exception as e:
+        logging.error(f"Error al agregar admin: {e}")
+        await update.message.reply_text("❌ Hubo un error al agregar el nuevo administrador.")
+        return
+
+    await update.message.reply_text(f"✅ Se agregó {new_admin_id} como administrador.")
+
+
+async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/removeadmin con args: {context.args}")
+
+    # Solo un admin puede remover administradores
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Uso: /removeadmin <idtelegram>")
+        return
+
+    try:
+        remove_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El ID debe ser un número entero.")
+        return
+
+    if remove_id not in ADMIN_IDS:
+        await update.message.reply_text("❌ Este usuario no es administrador.")
+        return
+
+    # Se remueve el admin de la variable global
+    ADMIN_IDS.remove(remove_id)
+
+    # Se reescribe el archivo admin_ids.txt con los administradores restantes
+    try:
+        with open("admin_ids.txt", "w", encoding="utf-8") as f:
+            for admin in ADMIN_IDS:
+                f.write(f"{admin}\n")
+    except Exception as e:
+        logging.error(f"Error al remover admin: {e}")
+        await update.message.reply_text("❌ Hubo un error al remover el administrador.")
+        return
+
+    await update.message.reply_text(f"✅ Se removió a {remove_id} de administradores.")
+
+
 # =============================================================================
 # 9. MAIN
 # =============================================================================
@@ -1249,6 +1324,8 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("removecode", removecode))
     application.add_handler(CommandHandler("showuser", showuser))
     application.add_handler(CommandHandler("listusers", listusers))
+    application.add_handler(CommandHandler("addadmin", addadmin))
+    application.add_handler(CommandHandler("removeadmin", removeadmin))
 
     # Ejecuta el bot
     application.run_polling()
