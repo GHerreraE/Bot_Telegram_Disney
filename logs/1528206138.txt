@@ -1,0 +1,4 @@
+2025-02-11 02:31:33.928201: /start
+2025-02-11 02:31:36.968768: Seleccionó Disney+
+2025-02-11 02:31:40.188772: Ingresó correo 'disneycito12@dmarcial.com' para disney
+2025-02-11 02:31:40.869460: Código Disney: 230674

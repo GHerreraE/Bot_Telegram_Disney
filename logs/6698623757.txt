@@ -2,3 +2,7 @@
 2025-02-08 04:15:29.130924: Seleccionó Disney+
 2025-02-08 04:15:30.432798: Ingresó correo 'disneycito23@dmarcial.com' para disney
 2025-02-08 04:15:31.398762: Código Disney: 917901
+2025-02-11 01:03:55.048905: /start
+2025-02-11 01:03:56.725660: Seleccionó Disney+
+2025-02-11 01:03:58.757175: Ingresó correo 'disneycito23@dmarcial.com' para disney
+2025-02-11 01:03:59.518810: Código Disney: 458086
