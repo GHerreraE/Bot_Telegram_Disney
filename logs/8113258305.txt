@@ -244,3 +244,17 @@
 2025-02-10 20:44:06.583086: /removeadmin con args: []
 2025-02-10 20:44:14.729249: /addadmin con args: ['124533']
 2025-02-10 20:44:51.876430: /removeadmin con args: ['124533']
+2025-02-11 11:57:21.295715: /start
+2025-02-11 11:57:23.424437: Seleccionó Netflix (submenú)
+2025-02-11 11:57:27.827309: Netflix => País/Idioma
+2025-02-11 11:57:37.063618: Ingresó correo 'funfjend@dmarcial.com' para netflix_country_info
+2025-02-11 11:57:58.413665: /start
+2025-02-11 11:58:00.850225: Seleccionó Netflix (submenú)
+2025-02-11 11:58:06.265473: Netflix => País/Idioma
+2025-02-11 11:58:12.733031: Ingresó correo 'netflixito02@dmarcial.com' para netflix_country_info
+2025-02-11 11:58:14.146881: País/Idioma Netflix: es, MX
+2025-02-11 11:58:32.811704: /start
+2025-02-11 11:58:34.890032: Seleccionó Netflix (submenú)
+2025-02-11 11:58:36.684297: Netflix => País/Idioma
+2025-02-11 11:58:38.417731: Ingresó correo 'aaaaaaa@dmarcial.com' para netflix_country_info
+2025-02-11 11:58:54.741925: /adduseremail con args: []
