@@ -258,3 +258,37 @@
 2025-02-11 11:58:36.684297: Netflix => País/Idioma
 2025-02-11 11:58:38.417731: Ingresó correo 'aaaaaaa@dmarcial.com' para netflix_country_info
 2025-02-11 11:58:54.741925: /adduseremail con args: []
+2025-02-11 18:50:29.373202: /start
+2025-02-11 18:50:31.248648: Seleccionó Netflix (submenú)
+2025-02-11 18:50:32.858216: Netflix => País/Idioma
+2025-02-11 18:50:35.178936: Ingresó correo 'aaaaaaa@dmarcial.com' para netflix_country_info
+2025-02-11 19:01:53.619418: /help
+2025-02-11 19:02:01.521743: Volvió al menú principal
+2025-02-11 19:02:23.281877: /help
+2025-02-11 19:02:25.473336: Volvió al menú principal
+2025-02-11 19:35:00.369565: Seleccionó Netflix (submenú)
+2025-02-11 19:35:02.057288: Netflix => País/Idioma
+2025-02-11 19:35:10.769244: Ingresó correo 'jdbdudbd@dmarcial.com' para netflix_country_info
+2025-02-11 19:51:09.646535: /start
+2025-02-11 19:51:12.559879: Seleccionó Disney+
+2025-02-11 19:51:17.338611: Ingresó correo 'disneycito37@dmarcial.com' para disney
+2025-02-11 19:51:18.016979: Código Disney: 745536
+2025-02-11 19:54:18.574664: /start
+2025-02-11 19:54:20.833579: Seleccionó Disney+
+2025-02-11 19:54:22.198239: Ingresó correo 'disneycito37@dmarcial.com' para disney
+2025-02-11 19:54:22.875403: Código Disney: 957653
+2025-02-11 20:10:04.705740: /start
+2025-02-11 20:10:06.861588: Ayuda
+2025-02-11 20:10:10.561621: Volvió al menú principal
+2025-02-11 20:10:12.024039: Seleccionó Disney+
+2025-02-11 20:10:13.546917: Cancel con /cancel
+2025-02-11 20:10:16.010445: Cancel con /cancel
+2025-02-11 20:10:17.119314: Cancel con /cancel
+2025-02-11 20:10:20.250769: Cancel con /cancel
+2025-02-11 20:10:22.981971: Cancel con /cancel
+2025-02-11 20:10:24.713079: /start
+2025-02-11 20:10:26.464898: Cancel con /cancel
+2025-02-11 20:10:28.853361: Cancel con /cancel
+2025-02-11 20:10:32.026705: No hay operación activa al hacer /cancel
+2025-02-11 20:10:35.259181: /mi_perfil
+2025-02-11 20:10:40.498432: /listusers
