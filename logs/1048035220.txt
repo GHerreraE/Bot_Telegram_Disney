@@ -1,0 +1,19 @@
+2025-02-12 05:32:14.723464: /start
+2025-02-12 05:32:21.968484: Seleccionó Disney+
+2025-02-12 05:32:42.106266: /start
+2025-02-12 05:32:44.007460: Seleccionó Netflix (submenú)
+2025-02-12 05:32:48.004101: Ingresó correo 'netflixito01fgvv@dmarcial.com' para disney
+2025-02-12 05:32:48.032134: Acceso denegado o expirado al correo
+2025-02-12 05:32:59.692944: Netflix => Código Acceso Temporal
+2025-02-12 05:33:03.021501: /start
+2025-02-12 05:33:04.747584: Seleccionó Netflix (submenú)
+2025-02-12 05:33:08.138007: Netflix => Código Acceso Temporal
+2025-02-12 05:33:10.228144: Ingresó correo 'netflixito01@dmarcial.com' para netflix_temporary_access
+2025-02-12 05:33:20.592278: /start
+2025-02-12 05:33:23.632939: Seleccionó Disney+
+2025-02-12 05:33:26.944677: Ingresó correo 'netflixito01@dmarcial.com' para disney
+2025-02-12 05:33:54.079012: /start
+2025-02-12 05:33:56.041697: Seleccionó Netflix (submenú)
+2025-02-12 05:33:58.451013: Netflix => Código Actualiza Hogar
+2025-02-12 05:33:59.937190: Ingresó correo 'netflixito01@dmarcial.com' para netflix_update_household
+2025-02-12 05:34:01.385438: Link Netflix (Actualizar Hogar): https://www.netflix.com/account/update-primary-location?nftoken=BgjolOvcAxKkAUNhjJHJs5zt1MbtWDQzHJaaqSrxZtlA4ykdpKmadSJ1HyyVIdnmw9ddZQez/wyOLHxuqf3N4PFmIDXoKAJqtfkvG0eXAOk6DIqIBeoP5gvvrVhsfDY+3SKCnl7k/jx/YGy3QECzR48Z/k3IrXJHayvbfE+SXMrKXGIJNbGWhlCBVjgkw+7YT/V6zliymlmEQI3ReVj0kIYtHLwFDdpqh86hPGFfGAYiDgoMQfdjRG+vkm3+TZr8&g=41194887-5d18-49a4-aa3d-2a96a0402622&lnktrk=EVO&operation=update&lkid=UPDATE_HOUSEHOLD_REQUESTED_OTP_CTA]

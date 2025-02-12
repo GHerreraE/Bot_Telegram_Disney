@@ -292,3 +292,15 @@
 2025-02-11 20:10:32.026705: No hay operación activa al hacer /cancel
 2025-02-11 20:10:35.259181: /mi_perfil
 2025-02-11 20:10:40.498432: /listusers
+2025-02-12 05:30:53.812368: /adduseremail con args: ['1048035220', 'netflixito01@dmarcial.com', '1']
+2025-02-12 05:31:16.648488: /accesscode con args: ['1048035220', '1']
+2025-02-12 05:31:48.861043: /start
+2025-02-12 05:31:50.624619: Seleccionó Netflix (submenú)
+2025-02-12 05:31:52.469571: Netflix => País/Idioma
+2025-02-12 05:32:02.987627: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-12 05:32:04.695746: País/Idioma Netflix: es, CL
+2025-02-12 05:32:40.956130: /adduseremail con args: ['1048035220', 'blablabla@dmarcial.com', '1']
+2025-02-12 05:33:16.029956: /adduseremail con args: ['1048035220', 'blablabla@blablabla.com', '1']
+2025-02-12 05:33:45.434022: /showuser con args: ['1048035220']
+2025-02-12 06:19:23.642970: No hay operación activa al hacer /cancel
+2025-02-12 06:21:53.321746: /mi_perfil
