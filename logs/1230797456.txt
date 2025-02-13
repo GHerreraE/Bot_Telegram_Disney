@@ -57,3 +57,15 @@
 2025-02-11 14:35:29.257163: Seleccionó Disney+
 2025-02-11 14:35:34.850547: Ingresó correo 'disneycito36@dmarcial.com' para disney
 2025-02-11 14:35:35.745515: Código Disney: 522080
+2025-02-13 16:56:55.963450: /start
+2025-02-13 16:56:56.256509: /start
+2025-02-13 16:56:56.799782: No hay operación activa al hacer /cancel
+2025-02-13 16:56:57.650396: /start
+2025-02-13 16:56:58.154033: /start
+2025-02-13 16:56:58.650144: /start
+2025-02-13 16:56:59.485493: /start
+2025-02-13 16:56:59.836735: /start
+2025-02-13 16:57:00.154843: /start
+2025-02-13 16:57:03.188493: Seleccionó Disney+
+2025-02-13 16:57:22.791188: Ingresó correo 'disneycito24@dmarcial.com' para disney
+2025-02-13 16:57:27.039953: Código Disney: 206347

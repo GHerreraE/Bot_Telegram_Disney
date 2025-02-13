@@ -6,3 +6,6 @@
 2025-02-11 01:03:56.725660: Seleccionó Disney+
 2025-02-11 01:03:58.757175: Ingresó correo 'disneycito23@dmarcial.com' para disney
 2025-02-11 01:03:59.518810: Código Disney: 458086
+2025-02-13 16:56:54.907902: /start
+2025-02-13 16:56:55.305186: /start
+2025-02-13 16:56:55.652695: /start
