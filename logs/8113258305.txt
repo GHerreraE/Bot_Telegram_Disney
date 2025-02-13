@@ -333,3 +333,23 @@
 2025-02-13 17:48:31.463319: Seleccionó Netflix (submenú)
 2025-02-13 17:48:34.005612: Netflix => Código Único (4 díg.)
 2025-02-13 17:48:42.022607: Ingresó correo 'djjfdj@dmarcial.com' para netflix_access_code
+2025-02-13 21:14:21.286598: /mi_perfil
+2025-02-13 21:33:21.652038: /start
+2025-02-13 21:33:23.508260: Seleccionó Netflix (submenú)
+2025-02-13 21:33:25.326687: Netflix => País/Idioma
+2025-02-13 21:33:31.228862: Ingresó correo 'enddj@dmarcial.com' para netflix_country_info
+2025-02-13 21:33:43.966251: /start
+2025-02-13 21:33:45.546600: Seleccionó Netflix (submenú)
+2025-02-13 21:33:46.863348: Netflix => País/Idioma
+2025-02-13 21:50:14.409693: /start
+2025-02-13 21:50:17.570213: Seleccionó Netflix (submenú)
+2025-02-13 21:50:22.196256: Netflix => País/Idioma
+2025-02-13 21:50:24.689413: Ingresó correo 'dsfsd@gmail.com' para netflix_country_info
+2025-02-13 21:58:09.520919: /start
+2025-02-13 21:58:12.584573: Seleccionó Netflix (submenú)
+2025-02-13 21:58:14.607354: Netflix => País/Idioma
+2025-02-13 21:58:27.684447: Ingresó correo 'fjndn@gmail.com' para netflix_country_info
+2025-02-13 22:31:25.348405: /start
+2025-02-13 22:31:29.907050: Seleccionó Netflix (submenú)
+2025-02-13 22:31:33.195194: Netflix => País/Idioma
+2025-02-13 22:31:36.492589: Ingresó correo 'bdjdbdud@dmarcial.com' para netflix_country_info

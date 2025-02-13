@@ -93,36 +93,6 @@ HELP_TEXT = (
 )
 
 # =============================================================================
-# 1.1. CARGAR DOMINIOS PERMITIDOS DESDE admin_imap_pass.txt
-# =============================================================================
-
-def load_allowed_domains(filename='admin_imap_pass.txt'):
-    """
-    Lee el archivo de cuentas y extrae los dominios permitidos (la parte después de '@').
-    Retorna un conjunto con los dominios en minúsculas.
-    """
-    allowed_domains = set()
-    if not os.path.exists(filename):
-        logging.error(f"No se encontró el archivo {filename} para cargar los dominios permitidos.")
-        return allowed_domains
-
-    with open(filename, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            if '|' not in line:
-                continue
-            email_str, _ = line.split("|", 1)
-            email_str = email_str.strip().lower()
-            if "@" in email_str:
-                domain = email_str.split("@")[-1]
-                allowed_domains.add(domain)
-    return allowed_domains
-
-ALLOWED_EMAIL_DOMAINS = load_allowed_domains()
-
-# =============================================================================
 # 2. LOGS CON COLORES
 # =============================================================================
 
@@ -279,7 +249,9 @@ def user_has_code_permission(user_id: int) -> bool:
 # =============================================================================
 
 def get_disney_code(requested_email: str):
-    socket.setdefaulttimeout(10)
+    # Se configura un timeout de 15 segundos
+    socket.setdefaulttimeout(15)
+
     for (acc_email, acc_password) in EMAIL_ACCOUNTS:
         try:
             server = imaplib.IMAP4_SSL(IMAP_HOST)
@@ -295,6 +267,11 @@ def get_disney_code(requested_email: str):
                 continue
 
             email_ids = messages[0].split()
+
+            # Mantener solo los últimos 50
+            if len(email_ids) > 50:
+                email_ids = email_ids[-50:]
+
             for email_id in reversed(email_ids):
                 status_msg, msg_data = server.fetch(email_id, "(RFC822)")
                 if status_msg != "OK":
@@ -378,7 +355,9 @@ def get_netflix_update_household_link(requested_email: str):
     return _search_netflix_email(requested_email, _parse_netflix_update_household_link)
 
 def _search_netflix_email(requested_email: str, parse_function):
-    socket.setdefaulttimeout(10)
+    # Se configura un timeout de 15 segundos
+    socket.setdefaulttimeout(15)
+
     for (acc_email, acc_password) in EMAIL_ACCOUNTS:
         try:
             server = imaplib.IMAP4_SSL(IMAP_HOST)
@@ -394,6 +373,11 @@ def _search_netflix_email(requested_email: str, parse_function):
                 continue
 
             email_ids = messages[0].split()
+
+            # Mantener solo los últimos 50
+            if len(email_ids) > 50:
+                email_ids = email_ids[-50:]
+
             for email_id in reversed(email_ids):
                 status_msg, msg_data = server.fetch(email_id, "(RFC822)")
                 if status_msg != "OK":
@@ -713,15 +697,9 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ El formato del correo es incorrecto.")
         return
 
-    # Extraer y normalizar el dominio
+    # Normalizar el correo
     requested_email = requested_email.lower().strip()
-    domain = requested_email.split("@")[-1]
-
-    # Validar que el dominio esté en la lista de dominios permitidos (extraída de admin_imap_pass.txt)
-    if domain not in ALLOWED_EMAIL_DOMAINS:
-        await update.message.reply_text("❌ El dominio del correo no es válido para esta búsqueda.")
-        return
-
+    
     user_log(user_id, f"Ingresó correo '{requested_email}' para {awaiting}")
     context.user_data['awaiting_email_for'] = None
 
@@ -1248,7 +1226,6 @@ async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"✅ Se agregó {new_admin_id} como administrador.")
 
-
 async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/removeadmin con args: {context.args}")
@@ -1286,7 +1263,6 @@ async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     await update.message.reply_text(f"✅ Se removió a {remove_id} de administradores.")
-
 
 # =============================================================================
 # 9. MAIN
