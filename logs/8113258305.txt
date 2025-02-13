@@ -310,3 +310,26 @@
 2025-02-12 06:50:14.283402: Ingresó correo 'netflixito01@dmarcial.com' para netflix_access_code
 2025-02-12 06:50:14.946696: Código Netflix 4 díg.: 8394
 2025-02-13 16:56:57.164477: /start
+2025-02-13 17:42:15.708117: Seleccionó Disney+
+2025-02-13 17:42:17.334339: Cancel con /cancel
+2025-02-13 17:42:20.015287: Cancel con /cancel
+2025-02-13 17:42:21.467079: Cancel con /cancel
+2025-02-13 17:42:24.993464: /start
+2025-02-13 17:42:29.859037: Cancel con /cancel
+2025-02-13 17:42:32.080017: Seleccionó Netflix (submenú)
+2025-02-13 17:42:39.094921: Netflix => País/Idioma
+2025-02-13 17:42:40.588675: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-13 17:42:41.318183: País/Idioma Netflix: es, CL
+2025-02-13 17:47:51.326565: /start
+2025-02-13 17:47:53.407590: Seleccionó Netflix (submenú)
+2025-02-13 17:47:54.958085: Netflix => País/Idioma
+2025-02-13 17:47:57.823381: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-13 17:47:58.510010: País/Idioma Netflix: es, CL
+2025-02-13 17:48:04.509115: /start
+2025-02-13 17:48:06.350185: Seleccionó Netflix (submenú)
+2025-02-13 17:48:07.943245: Netflix => País/Idioma
+2025-02-13 17:48:14.681586: Ingresó correo 'bfienfufndu@dmarcial.com' para netflix_country_info
+2025-02-13 17:48:28.932789: /start
+2025-02-13 17:48:31.463319: Seleccionó Netflix (submenú)
+2025-02-13 17:48:34.005612: Netflix => Código Único (4 díg.)
+2025-02-13 17:48:42.022607: Ingresó correo 'djjfdj@dmarcial.com' para netflix_access_code
