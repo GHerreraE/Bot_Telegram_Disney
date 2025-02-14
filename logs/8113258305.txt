@@ -379,3 +379,13 @@
 2025-02-14 17:21:31.962914: Netflix => Código Único (4 díg.)
 2025-02-14 17:21:33.169782: Ingresó correo 'netflixito02@dmarcial.com' para netflix_access_code
 2025-02-14 17:21:33.829127: Código Netflix 4 díg.: 0889
+2025-02-14 21:10:23.408893: /start
+2025-02-14 22:30:33.724248: /adduseremail con args: []
+2025-02-14 22:31:08.962933: /adduseremail con args: ['7126067864', 'disneycito39@dmarcial.com', '30']
+2025-02-14 22:31:25.934965: /accesscode con args: ['7126067864']
+2025-02-14 22:31:32.372892: /accesscode con args: ['7126067864', '30']
+2025-02-14 22:31:48.256044: /showuser con args: ['7126067864']
+2025-02-14 22:35:49.962745: /start
+2025-02-14 22:35:52.870959: Seleccionó Disney+
+2025-02-14 22:35:55.202241: Cancel con /cancel
+2025-02-14 22:35:56.752530: /start

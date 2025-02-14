@@ -1,0 +1,5 @@
+2025-02-14 22:30:01.177797: /start
+2025-02-14 22:30:06.523855: Seleccionó Disney+
+2025-02-14 22:30:23.235548: /mi_perfil
+2025-02-14 22:40:09.687560: Ingresó correo 'disneycito39@dmarcial.com' para disney
+2025-02-14 22:40:10.627921: Código Disney: 259531
