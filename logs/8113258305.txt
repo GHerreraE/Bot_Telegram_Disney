@@ -370,3 +370,12 @@
 2025-02-14 13:15:15.944050: /start
 2025-02-14 13:15:17.833001: Cancel con /cancel
 2025-02-14 15:41:28.894932: /start
+2025-02-14 17:20:46.402523: Seleccionó Netflix (submenú)
+2025-02-14 17:20:49.254748: Netflix => País/Idioma
+2025-02-14 17:20:57.787802: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-14 17:20:58.669821: País/Idioma Netflix: es, CL
+2025-02-14 17:21:27.493566: /start
+2025-02-14 17:21:29.123394: Seleccionó Netflix (submenú)
+2025-02-14 17:21:31.962914: Netflix => Código Único (4 díg.)
+2025-02-14 17:21:33.169782: Ingresó correo 'netflixito02@dmarcial.com' para netflix_access_code
+2025-02-14 17:21:33.829127: Código Netflix 4 díg.: 0889
