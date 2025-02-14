@@ -353,3 +353,11 @@
 2025-02-13 22:31:29.907050: Seleccionó Netflix (submenú)
 2025-02-13 22:31:33.195194: Netflix => País/Idioma
 2025-02-13 22:31:36.492589: Ingresó correo 'bdjdbdud@dmarcial.com' para netflix_country_info
+2025-02-13 22:53:02.307888: /start
+2025-02-13 22:53:04.918282: Seleccionó Netflix (submenú)
+2025-02-13 22:53:06.979380: Netflix => País/Idioma
+2025-02-13 22:53:09.719990: Ingresó correo 'bdjdbdud@dmarcial.com' para netflix_country_info
+2025-02-13 22:53:15.368329: /start
+2025-02-13 22:53:16.707314: Seleccionó Netflix (submenú)
+2025-02-13 22:53:18.155641: Netflix => Link Restablecimiento
+2025-02-13 22:53:19.512796: Ingresó correo 'putinsuicida23m@dereck.pro' para netflix_reset_link
