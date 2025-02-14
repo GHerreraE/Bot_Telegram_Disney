@@ -361,3 +361,11 @@
 2025-02-13 22:53:16.707314: Seleccionó Netflix (submenú)
 2025-02-13 22:53:18.155641: Netflix => Link Restablecimiento
 2025-02-13 22:53:19.512796: Ingresó correo 'putinsuicida23m@dereck.pro' para netflix_reset_link
+2025-02-14 13:15:03.136694: /start
+2025-02-14 13:15:04.900038: Seleccionó Netflix (submenú)
+2025-02-14 13:15:07.724991: Netflix => País/Idioma
+2025-02-14 13:15:09.135959: Cancel con /cancel
+2025-02-14 13:15:12.725447: Cancel con /cancel
+2025-02-14 13:15:14.613468: Cancel con /cancel
+2025-02-14 13:15:15.944050: /start
+2025-02-14 13:15:17.833001: Cancel con /cancel
