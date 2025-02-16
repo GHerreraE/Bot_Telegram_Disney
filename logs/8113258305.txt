@@ -421,3 +421,71 @@
 2025-02-16 20:42:25.831986: Netflix => Código Único (4 díg.)
 2025-02-16 20:42:27.090689: Ingresó correo 'netflixito02@dmarcial.com' para netflix_access_code
 2025-02-16 20:42:27.734410: Código Netflix 4 díg.: 1447
+2025-02-16 20:44:46.789797: /start
+2025-02-16 20:44:50.922113: Seleccionó Netflix (submenú)
+2025-02-16 20:44:54.514807: Netflix => Link Restablecimiento
+2025-02-16 20:44:55.757655: Ingresó correo 'netflixito05@dmarcial.com' para netflix_reset_link
+2025-02-16 20:44:56.431802: Link Netflix: https://www.netflix.com/password?g=36258e12-d286-4c25-9e0b-0065e2bddb3a&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjAWX8X8xCnDR7ff6ZXM6BFA4cPLqFBzxNNRaeMffDLvSg%2F5S5YCwvuS9kAm%2FvtNo6JxuY3kkU0VRAoW6nuIka5x1cxMeRR3%2BG1CB%2BFy9TersfIRQQv2l525IkZCsA5v5Su3YBVbJHPU94azwAGnJJ4q%2F26Dn1k9WzpurcLrYU%2FiPnpRvq1R3p1QAq4tjWBsKCoLXJTTOEiw1wl%2FLf2yvlHaPuVB4YBiIOCgz5KEmliO617oMIroo%3D
+2025-02-16 20:47:29.045579: /start
+2025-02-16 20:47:32.130814: Seleccionó Netflix (submenú)
+2025-02-16 20:47:35.015758: Netflix => Código Único (4 díg.)
+2025-02-16 20:47:36.175179: Ingresó correo 'netflixito05@dmarcial.com' para netflix_access_code
+2025-02-16 20:47:36.809724: Código Netflix 4 díg.: 1974
+2025-02-16 20:49:26.527155: /start
+2025-02-16 20:49:28.938005: Seleccionó Netflix (submenú)
+2025-02-16 20:49:32.790964: Netflix => Código Acceso Temporal
+2025-02-16 20:49:37.845761: Cancel con /cancel
+2025-02-16 20:49:40.951027: /start
+2025-02-16 20:49:43.077477: Seleccionó Netflix (submenú)
+2025-02-16 21:52:29.394611: /listusers
+2025-02-16 22:20:11.773241: /adduseremail con args: ['731397974', 'disneycito11@dmarcial.com', '11']
+2025-02-16 22:20:31.325730: /adduseremail con args: ['1528206138', 'disneycito12@dmarcial.com', '16']
+2025-02-16 22:20:45.675717: /adduseremail con args: ['1417342182', 'disneycito18@dmarcial.com', '17']
+2025-02-16 22:21:02.301260: /adduseremail con args: ['1262379627', 'disneycito18@dmarcial.com', '17']
+2025-02-16 22:21:37.223052: /adduseremail con args: ['6698623757', 'disneycito22@dmarcial.com', 'disneycito23@dmarcial.com', 'disneycito24@dmarcial.com', '20']
+2025-02-16 22:21:55.581056: /adduseremail con args: ['790887455', 'disneycito26@dmarcial.com', '21']
+2025-02-16 22:22:18.949564: /adduseremail con args: ['6710279702', 'disneycito29@dmarcial.com', '22']
+2025-02-16 22:22:43.564212: /adduseremail con args: ['5205056453', 'disneycito32@dmarcial.com', '23']
+2025-02-16 22:22:59.853623: /adduseremail con args: ['7126067864', 'disneycito39@dmarcial.com', '28']
+2025-02-16 22:23:12.472569: /accessdisneycode con args: []
+2025-02-16 22:23:54.205385: /accessdisneycode con args: ['731397974', '11']
+2025-02-16 22:24:05.603817: /accessdisneycode con args: ['1528206138', '16']
+2025-02-16 22:24:23.099352: /accessdisneycode con args: ['1417342182', '17']
+2025-02-16 22:25:47.209855: /accessdisneycode con args: ['1262379627', '17']
+2025-02-16 22:26:01.782102: /accessdisneycode con args: ['6698623757', '20']
+2025-02-16 22:26:13.351992: /accessdisneycode con args: ['790887455', '21']
+2025-02-16 22:26:41.324616: /accessdisneycode con args: ['6710279702', '22']
+2025-02-16 22:26:58.257256: /accessdisneycode con args: ['5205056453', '23']
+2025-02-16 22:27:24.806282: /accessdisneycode con args: ['7126067864', '28']
+2025-02-16 22:27:28.119672: /listusers
+2025-02-16 22:28:12.899565: /adduseremail con args: []
+2025-02-16 22:28:17.104618: /accessnetflixcode con args: []
+2025-02-16 22:28:21.396224: /accessdisneycode con args: []
+2025-02-16 22:35:05.095664: /start
+2025-02-16 22:35:07.152741: Seleccionó Netflix (submenú)
+2025-02-16 22:35:15.120616: No hay operación activa al hacer /cancel
+2025-02-16 22:35:18.290067: No hay operación activa al hacer /cancel
+2025-02-16 22:35:40.937023: No hay operación activa al hacer /cancel
+2025-02-16 22:35:43.871719: No hay operación activa al hacer /cancel
+2025-02-16 22:35:47.758073: /start
+2025-02-16 22:35:56.984939: /start
+2025-02-16 22:35:58.390056: Ayuda
+2025-02-16 22:35:59.644972: Volvió al menú principal
+2025-02-16 22:36:01.554761: Seleccionó Disney+
+2025-02-16 22:36:02.550328: Cancel con /cancel
+2025-02-16 22:38:36.404466: /start
+2025-02-16 22:38:39.067612: Seleccionó Netflix (submenú)
+2025-02-16 22:38:40.819878: Cancel request
+2025-02-16 22:38:43.895961: /start
+2025-02-16 22:38:46.294083: Seleccionó Disney+
+2025-02-16 22:38:47.618057: Cancel request
+2025-02-16 22:38:49.864430: Seleccionó Netflix (submenú)
+2025-02-16 22:38:51.607884: Netflix => País/Idioma (no requiere permiso)
+2025-02-16 22:38:52.881706: Cancel request
+2025-02-16 22:38:54.698531: Seleccionó Netflix (submenú)
+2025-02-16 22:38:56.053973: Netflix => Enlace de Acceso Temporal (no requiere permiso)
+2025-02-16 22:38:57.532715: Cancel request
+2025-02-16 22:40:31.035371: /start
+2025-02-16 22:40:41.110718: Seleccionó Disney+
+2025-02-16 22:40:42.419597: Cancel request
+2025-02-16 22:40:43.745472: Seleccionó Netflix (submenú)
