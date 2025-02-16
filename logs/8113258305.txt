@@ -396,3 +396,28 @@
 2025-02-15 13:16:08.942654: /removeusertotal con args: ['1048035220']
 2025-02-15 13:16:12.744185: /listusers
 2025-02-15 18:35:42.555491: /listusers
+2025-02-16 20:23:06.338861: /start
+2025-02-16 20:24:12.364388: Seleccionó Netflix (submenú)
+2025-02-16 20:26:09.390716: Netflix => Código Único (4 díg.)
+2025-02-16 20:26:12.044525: Cancel con /cancel
+2025-02-16 20:26:14.440447: Cancel con /cancel
+2025-02-16 20:26:18.725627: Cancel con /cancel
+2025-02-16 20:26:37.771226: Cancel con /cancel
+2025-02-16 20:26:48.833674: Seleccionó Netflix (submenú)
+2025-02-16 20:38:55.484718: Netflix => Código Único (4 díg.)
+2025-02-16 20:38:57.358874: Ingresó correo 'netflixito01@dmarcial.com' para netflix_access_code
+2025-02-16 20:38:58.006447: Código Netflix 4 díg.: 9807
+2025-02-16 20:39:09.857932: /start
+2025-02-16 20:39:11.695702: Seleccionó Netflix (submenú)
+2025-02-16 20:39:13.958521: Netflix => Código Acceso Temporal
+2025-02-16 20:39:20.373449: Ingresó correo 'netflixito01@dmarcial.com' para netflix_temporary_access
+2025-02-16 20:40:39.605445: /start
+2025-02-16 20:40:42.543374: Seleccionó Netflix (submenú)
+2025-02-16 20:40:44.589742: Netflix => Link Restablecimiento
+2025-02-16 20:40:53.444267: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-16 20:40:54.331492: Link Netflix: https://www.netflix.com/password?g=b9ac5125-c88f-405f-a46d-17d439a507e1&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjAcJU1GGjQNHYQZV38UnyWR0p1xlGdJUjIwuYkYbugILvMkD8ILx0mAF9JWfA0SAUxD5mldl6%2B9lVoYkPHD7dGymb3wYptc4TMYA29GKCJRA98Tb3joB91Anacl7StthXn2x87fbqD%2F6909P%2BTVrAgDGP4%2BhMsFLFq0S5yiLAo7PG%2BCYBDnR4ndvSyRmH6GEuYSb5mO57gEN%2B7zBbzZTxhyiX6r8YBiIOCgy2FrGoboM%2BoRRGtsU%3D
+2025-02-16 20:42:21.375510: /start
+2025-02-16 20:42:23.299204: Seleccionó Netflix (submenú)
+2025-02-16 20:42:25.831986: Netflix => Código Único (4 díg.)
+2025-02-16 20:42:27.090689: Ingresó correo 'netflixito02@dmarcial.com' para netflix_access_code
+2025-02-16 20:42:27.734410: Código Netflix 4 díg.: 1447
