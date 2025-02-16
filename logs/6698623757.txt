@@ -9,3 +9,12 @@
 2025-02-13 16:56:54.907902: /start
 2025-02-13 16:56:55.305186: /start
 2025-02-13 16:56:55.652695: /start
+2025-02-15 23:30:01.419236: Seleccionó Disney+
+2025-02-15 23:30:17.499963: Ingresó correo 'disneycito24@dmarcial.com' para disney
+2025-02-15 23:30:18.830214: Código Disney: 022356
+2025-02-15 23:33:03.734965: Seleccionó Disney+
+2025-02-15 23:33:08.219722: Ingresó correo 'disneycito24@dmarcial.com' para disney
+2025-02-15 23:33:09.112608: Código Disney: 022356
+2025-02-15 23:38:43.929011: Seleccionó Disney+
+2025-02-15 23:38:47.624755: Ingresó correo 'disneycito24@dmarcial.com' para disney
+2025-02-15 23:38:48.430088: Código Disney: 022356
