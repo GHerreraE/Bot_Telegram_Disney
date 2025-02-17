@@ -489,3 +489,42 @@
 2025-02-16 22:40:41.110718: Seleccionó Disney+
 2025-02-16 22:40:42.419597: Cancel request
 2025-02-16 22:40:43.745472: Seleccionó Netflix (submenú)
+2025-02-16 22:47:56.169548: Cancel request
+2025-02-16 22:47:58.392998: /start
+2025-02-16 22:47:59.648340: Seleccionó Disney+
+2025-02-16 22:48:40.324859: /accessnetflixcode con args: []
+2025-02-16 22:49:00.802942: /accessdisneycode con args: []
+2025-02-16 22:57:32.410841: /start
+2025-02-16 22:57:34.666126: Seleccionó Netflix (submenú)
+2025-02-16 22:57:37.679740: Netflix => Link Restablecimiento
+2025-02-16 22:58:22.445311: /start
+2025-02-16 22:58:26.141950: Seleccionó Netflix (submenú)
+2025-02-16 22:58:28.861111: Netflix => Link Restablecimiento
+2025-02-16 22:58:35.943558: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-16 22:58:36.847009: Link Netflix: https://www.netflix.com/password?g=5f84581d-317a-445a-befc-b236466c33aa&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjAcOZDb%2FcuZQwuam1noBqeoi0BdsKWfBJXbB5GJjbsqwDtcCKIC99HNzmfdQ3bE%2FWcSFHoqCaR5JgXSn7C3YbnQ2uqZ8fWdpZGHmH2i72cb49WOes4zuZUkw3aIxCV0Obr8lzXDI18ah3HjRc6uJ9DVTwCGoBzahKPi579n8Pvp%2BY2CrMHn1iU3fqHGfNWpacs9eDQqwgfJs9LEVJT9813iZG%2FHQYBiIOCgxl9hojmm1xSIeAdJw%3D
+2025-02-16 23:09:49.993720: /start
+2025-02-16 23:09:52.606798: Ayuda
+2025-02-16 23:09:54.156111: Volvió al menú principal
+2025-02-16 23:10:03.696576: /listusers
+2025-02-16 23:11:16.379560: /listusers
+2025-02-16 23:16:53.999254: /start
+2025-02-16 23:16:55.740685: Seleccionó Netflix (submenú)
+2025-02-16 23:16:59.712637: Netflix => Link Restablecimiento
+2025-02-16 23:17:03.375731: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-16 23:17:04.038574: Link Netflix: https://www.netflix.com/password?g=f99d801c-cd58-41f2-a966-fee2a2db0796&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjAagieo%2FSC1%2B%2Fp9C%2Fh083ips%2FtImsGGnswhUFZk1JWzOd%2B%2FgkP7tla9JemHjsw%2F55SK3U%2F2Glm9dfvJ0xZDtmuhkUUOfNVv1Fup5iJ%2FAWWwBRJxNnOsQsO%2Fy34NQV%2FIgu52uQKV29N1BONucmCY2w3Xvg7AYxLQgKWHrlvlftPUrM9lZ6B2a1y3Xri0oSRB8vPmj66WGkFL5n1Y6hrgxYaSLe3IQYBiIOCgzLjXJ4L04EEnc%2Bs%2Fo%3D
+2025-02-16 23:24:54.296870: /start
+2025-02-16 23:24:57.035483: Seleccionó Netflix (submenú)
+2025-02-16 23:24:59.459362: Netflix => Link Restablecimiento
+2025-02-16 23:25:08.040868: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-16 23:25:08.947062: Link Netflix: https://www.netflix.com/password?g=b5418e1f-92ed-4ed9-9cc0-0265e0d97aa7&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjAQ7IqE4EKAEfpfaDZtSxVwH7ex%2FSNVJcBHhDirMNQEYMtxrTW4J6ArZPfJ%2B0a7BxvXwtPzCzCzQmGqxxnxS51Z3y42h%2BUNP%2Ft7iJ9Ni5e5zOzDn%2BXhoX10lvqgMpywL4LSlz7f0eUX0ppwdxwLJWzjHu2qw77kR5DHWYIpA8WlQdiUPad4Wx7EVuqr2HyRXJ2lRwIApoYczX5jt8uyz91h8MyJMYBiIOCgyxERKl8AsY9WAJMqg%3D
+2025-02-16 23:29:46.624145: /start
+2025-02-16 23:29:48.148387: Seleccionó Netflix (submenú)
+2025-02-16 23:29:50.768681: Netflix => País/Idioma (no requiere permiso)
+2025-02-16 23:29:52.146105: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-16 23:29:52.812005: País/Idioma Netflix: es, CL
+2025-02-16 23:41:28.217338: /start
+2025-02-16 23:41:29.881343: /help
+2025-02-16 23:41:32.678075: /mi_perfil
+2025-02-16 23:53:37.479115: /adduseremail con args: ['1048035220', 'netflixito01@dmarcial.com', '1']
+2025-02-16 23:53:45.070156: /accessnetflixcode con args: ['1048035220', '1']
+2025-02-16 23:55:04.587993: /showuser con args: ['1048035220']

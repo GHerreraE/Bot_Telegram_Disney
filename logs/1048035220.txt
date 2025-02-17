@@ -17,3 +17,18 @@
 2025-02-12 05:33:58.451013: Netflix => Código Actualiza Hogar
 2025-02-12 05:33:59.937190: Ingresó correo 'netflixito01@dmarcial.com' para netflix_update_household
 2025-02-12 05:34:01.385438: Link Netflix (Actualizar Hogar): https://www.netflix.com/account/update-primary-location?nftoken=BgjolOvcAxKkAUNhjJHJs5zt1MbtWDQzHJaaqSrxZtlA4ykdpKmadSJ1HyyVIdnmw9ddZQez/wyOLHxuqf3N4PFmIDXoKAJqtfkvG0eXAOk6DIqIBeoP5gvvrVhsfDY+3SKCnl7k/jx/YGy3QECzR48Z/k3IrXJHayvbfE+SXMrKXGIJNbGWhlCBVjgkw+7YT/V6zliymlmEQI3ReVj0kIYtHLwFDdpqh86hPGFfGAYiDgoMQfdjRG+vkm3+TZr8&g=41194887-5d18-49a4-aa3d-2a96a0402622&lnktrk=EVO&operation=update&lkid=UPDATE_HOUSEHOLD_REQUESTED_OTP_CTA]
+2025-02-16 23:54:51.741623: /start
+2025-02-16 23:54:53.500954: Seleccionó Netflix (submenú)
+2025-02-16 23:54:55.386031: Netflix => País/Idioma (no requiere permiso)
+2025-02-16 23:55:02.807936: Ingresó correo 'netflixito01@dmarcial.com' para netflix_country_info
+2025-02-16 23:55:03.761319: País/Idioma Netflix: es, CL
+2025-02-16 23:55:31.579622: /start
+2025-02-16 23:55:33.449706: Seleccionó Netflix (submenú)
+2025-02-16 23:55:35.654068: Netflix => Link Restablecimiento
+2025-02-16 23:55:37.353846: Ingresó correo 'netflixito01@dmarcial.com' para netflix_reset_link
+2025-02-16 23:55:37.997666: Link Netflix: https://www.netflix.com/password?g=71cdd0dc-18fd-4370-ae41-2038feae5e07&lkid=URL_CTA&lnktrk=EVO&nftoken=BgjolOvcAxKjARM4yVLnW1cmBJr4dmL3fLhFZ65v9fvu6Nn%2FB54tY8N9CSni3A9muW3nP1JYZw2G4kiGsfrb0Ng9hdNkn53TZhWPBYmh%2Frlay5mAxs%2B%2Ba7bqSWqFLiSkP3AStVCNiUGYEDWHTBK70UyH8hFSN%2BUaweZwuN9HhW%2FYZKwKII1xOon4J51WD9nDilTH65RF%2Bxn%2BavXkPOX%2FQFiPE3SZc%2Fc3GnA822UYBiIOCgw2BBBKQBTmF7ack78%3D
+2025-02-16 23:59:31.104386: /start
+2025-02-16 23:59:32.814165: Seleccionó Netflix (submenú)
+2025-02-16 23:59:34.961546: Netflix => Código Único (4 díg.)
+2025-02-16 23:59:35.960371: Ingresó correo 'netflixito01@dmarcial.com' para netflix_access_code
+2025-02-16 23:59:36.621532: Código Netflix 4 díg.: 6672
