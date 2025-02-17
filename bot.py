@@ -191,7 +191,7 @@ def user_has_valid_access(user_id: int, email_address: str) -> bool:
 
 # =============================================================================
 # 4. BASE DE DATOS DE PERMISO DE CÓDIGOS
-#    === CAMBIO: Se separan en dos DB diferentes, una para Netflix y otra para Disney. ===
+#    (Netflix y Disney en archivos separados)
 # =============================================================================
 
 NETFLIX_CODE_FILE = "netflix_code_db.txt"
@@ -272,8 +272,6 @@ def save_disney_code_access(code_dict):
                 f.write(f"{uid} None\n")
             else:
                 f.write(f"{uid} {exp_date.isoformat()}\n")
-
-# === NUEVAS funciones para verificar permisos de Netflix y Disney por separado ===
 
 def user_has_netflix_code_permission(user_id: int) -> bool:
     if is_admin(user_id):
@@ -618,12 +616,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name or "Usuario"
     user_log(user_id, "/start")
 
+    # Se agrega la nueva opción "Info user" en el menú principal
     keyboard = [
         [
             InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
             InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
         ],
-        [InlineKeyboardButton("Ayuda 💡", callback_data="help")]
+        [
+            InlineKeyboardButton("Info user", callback_data="info_user"),
+            InlineKeyboardButton("Ayuda 💡", callback_data="help")
+        ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -649,12 +651,10 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "submenu_netflix":
         user_log(user_id, "Seleccionó Netflix (submenú)")
-        # === CAMBIO: Solo mostramos las 3 opciones base sin permiso de código ===
         keyboard = [
             [InlineKeyboardButton("🌎 País/Idioma", callback_data="netflix_country_info")],
             [InlineKeyboardButton("🔑 Acceso Temporal", callback_data="netflix_temporary_access")],
             [InlineKeyboardButton("🏠 Actualiza Hogar", callback_data="netflix_update_household")],
-            # Opciones que requieren permiso de código de Netflix:
             [InlineKeyboardButton("🔗 Link Restablecimiento", callback_data="netflix_reset_link"),
              InlineKeyboardButton("🔑 Código Único (4 díg.)", callback_data="netflix_access_code")],
             [InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]
@@ -665,10 +665,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup
         )
 
-    # === Opciones Netflix (2 de ellas requieren permiso, 3 no) ===
     elif query.data == "netflix_reset_link":
         user_log(user_id, "Netflix => Link Restablecimiento")
-        # Verificar permiso de código (NETFLIX)
         if not user_has_netflix_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Netflix (restablecimiento).")
             await query.edit_message_text(
@@ -686,7 +684,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "netflix_access_code":
         user_log(user_id, "Netflix => Código Único (4 díg.)")
-        # Verificar permiso de código (NETFLIX)
         if not user_has_netflix_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Netflix (código único).")
             await query.edit_message_text(
@@ -732,6 +729,71 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['awaiting_email_for'] = 'netflix_update_household'
 
+    # Nueva opción "Info user" para reemplazar /mi_perfil
+    elif query.data == "info_user":
+        user_log(user_id, "Info user")
+        users_dict = load_users()
+
+        user_id_esc = escape_markdown(str(user_id))
+        info = f"**Tu ID de Telegram:** `{user_id_esc}`\n\n"
+
+        if user_id not in users_dict or not users_dict[user_id]:
+            info += "❌ No tienes correos asignados en la base de datos.\n"
+        else:
+            info += "**Accesos a correos:**\n"
+            for mail, exp_date in users_dict[user_id].items():
+                mail_esc = escape_markdown(mail)
+                if exp_date is None:
+                    info += f" - `{mail_esc}`: acceso *ilimitado*\n"
+                else:
+                    delta = (exp_date - datetime.now().date()).days
+                    if delta < 0:
+                        info += f" - `{mail_esc}`: ❌ **Expirado** (expiró el {exp_date.isoformat()})\n"
+                    else:
+                        info += f" - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date.isoformat()})\n"
+
+        # Permisos Disney
+        if user_has_disney_code_permission(user_id):
+            disney_dict = load_disney_code_access()
+            if user_id in disney_dict:
+                exp_date = disney_dict[user_id]
+                if exp_date is None:
+                    info += "\n✅ Tienes *permiso ilimitado* para extraer códigos de Disney+."
+                else:
+                    delta = (exp_date - datetime.now().date()).days
+                    if delta < 0:
+                        info += "\n❌ Tu permiso para extraer códigos de Disney+ está **expirado**."
+                    else:
+                        info += f"\n⏳ Permiso Disney+ hasta {exp_date.isoformat()} (faltan {delta} días)."
+            else:
+                info += "\n✅ Tienes permiso para extraer códigos de Disney+ (sin fecha registrada)."
+        else:
+            info += "\n❌ No tienes permiso para extraer códigos de Disney+."
+
+        # Permisos Netflix
+        if user_has_netflix_code_permission(user_id):
+            netflix_dict = load_netflix_code_access()
+            if user_id in netflix_dict:
+                exp_date = netflix_dict[user_id]
+                if exp_date is None:
+                    info += "\n✅ Tienes *permiso ilimitado* para extraer códigos de Netflix."
+                else:
+                    delta = (exp_date - datetime.now().date()).days
+                    if delta < 0:
+                        info += "\n❌ Tu permiso para extraer códigos de Netflix está **expirado**."
+                    else:
+                        info += f"\n⏳ Permiso Netflix hasta {exp_date.isoformat()} (faltan {delta} días)."
+            else:
+                info += "\n✅ Tienes permiso para extraer códigos de Netflix (sin fecha registrada)."
+        else:
+            info += "\n❌ No tienes permiso para extraer códigos de Netflix."
+
+        if is_admin(user_id):
+            info += "\n\n👑 *Eres administrador*, con acceso total."
+
+        await query.edit_message_text(info, parse_mode="Markdown")
+        context.user_data['awaiting_email_for'] = None
+
     elif query.data == "help":
         user_log(user_id, "Ayuda")
         keyboard = [[InlineKeyboardButton("Volver ↩️", callback_data="volver_menu")]]
@@ -753,7 +815,10 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
                 InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
             ],
-            [InlineKeyboardButton("Ayuda 💡", callback_data="help")]
+            [
+                InlineKeyboardButton("Info user", callback_data="info_user"),
+                InlineKeyboardButton("Ayuda 💡", callback_data="help")
+            ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
@@ -775,9 +840,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ El formato del correo es incorrecto.")
         return
 
-    # Normalizar el correo
     requested_email = requested_email.lower().strip()
-    
     user_log(user_id, f"Ingresó correo '{requested_email}' para {awaiting}")
     context.user_data['awaiting_email_for'] = None
 
@@ -791,9 +854,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔄 Buscando, por favor espera...")
 
-    # DISNEY
     if awaiting == "disney":
-        # Requiere permiso de disney
         if not user_has_disney_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Disney")
             await update.message.reply_text(
@@ -813,9 +874,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("⚠️ No se encontró un código reciente de Disney+")
 
-    # NETFLIX RESET LINK (requiere permiso netflix code)
     elif awaiting == "netflix_reset_link":
-        # Ya se validó en el callback, pero por seguridad:
         if not user_has_netflix_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Netflix (reset link)")
             await update.message.reply_text(
@@ -835,7 +894,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("⚠️ No se encontró un link reciente de Netflix")
 
-    # NETFLIX CODE (4 díg.) (requiere permiso netflix code)
     elif awaiting == "netflix_access_code":
         if not user_has_netflix_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Netflix code (4 díg).")
@@ -856,7 +914,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("⚠️ No se encontró ningún código reciente de Netflix")
 
-    # NETFLIX COUNTRY INFO (NO requiere permiso)
     elif awaiting == "netflix_country_info":
         info, minutes = get_netflix_country_info(requested_email)
         if info:
@@ -873,7 +930,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("⚠️ No se encontró país/idioma en el correo de Netflix.")
 
-    # NETFLIX TEMPORARY ACCESS (NO requiere permiso)
     elif awaiting == "netflix_temporary_access":
         link, minutes = get_netflix_temporary_access_link(requested_email)
         if link:
@@ -889,7 +945,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "⚠️ No se encontró ningún enlace de acceso temporal en tu correo de Netflix."
             )
 
-    # NETFLIX UPDATE HOUSEHOLD (NO requiere permiso)
     elif awaiting == "netflix_update_household":
         link, minutes = get_netflix_update_household_link(requested_email)
         if link:
@@ -909,21 +964,20 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_log(user_id, "Cancel request")
 
-    # Verificamos si se invoca desde un callback query (botón) o un comando /cancel (mensaje de texto)
     if update.callback_query:
         query = update.callback_query
-        # Cancel desde botón
-        await query.answer()  # responder al callback para quitar la "ruedita"
-        
+        await query.answer()
         if context.user_data.get('awaiting_email_for'):
             context.user_data['awaiting_email_for'] = None
-            # Aquí podrías reponer el menú principal en el mismo mensaje
             keyboard = [
                 [
                     InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
                     InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
                 ],
-                [InlineKeyboardButton("Ayuda 💡", callback_data="help")]
+                [
+                    InlineKeyboardButton("Info user", callback_data="info_user"),
+                    InlineKeyboardButton("Ayuda 💡", callback_data="help")
+                ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
@@ -931,10 +985,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=reply_markup
             )
         else:
-            # Ya no había operación activa
             await query.edit_message_text("No hay ninguna operación activa que cancelar.")
     else:
-        # Cancel desde un mensaje /cancel
         if context.user_data.get('awaiting_email_for'):
             context.user_data['awaiting_email_for'] = None
             keyboard = [
@@ -942,7 +994,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
                     InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
                 ],
-                [InlineKeyboardButton("Ayuda 💡", callback_data="help")]
+                [
+                    InlineKeyboardButton("Info user", callback_data="info_user"),
+                    InlineKeyboardButton("Ayuda 💡", callback_data="help")
+                ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await update.message.reply_text(
@@ -952,85 +1007,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         else:
             await update.message.reply_text("No hay ninguna operación activa que cancelar.")
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    user_log(user_id, "/help")
-
-    keyboard = [[InlineKeyboardButton("Volver ↩️", callback_data="volver_menu")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text(
-        text=HELP_TEXT,
-        parse_mode="Markdown",
-        reply_markup=reply_markup
-    )
-
-    context.user_data['awaiting_email_for'] = None
-
-async def mi_perfil(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    user_log(user_id, "/mi_perfil")
-    users_dict = load_users()
-
-    user_id_esc = escape_markdown(str(user_id))
-    info = f"**Tu ID de Telegram:** `{user_id_esc}`\n\n"
-
-    if user_id not in users_dict or not users_dict[user_id]:
-        info += "❌ No tienes correos asignados en la base de datos.\n"
-    else:
-        info += "**Accesos a correos:**\n"
-        for mail, exp_date in users_dict[user_id].items():
-            mail_esc = escape_markdown(mail)
-            if exp_date is None:
-                info += f" - `{mail_esc}`: acceso *ilimitado*\n"
-            else:
-                delta = (exp_date - datetime.now().date()).days
-                if delta < 0:
-                    info += f" - `{mail_esc}`: ❌ **Expirado** (expiró el {exp_date.isoformat()})\n"
-                else:
-                    info += f" - `{mail_esc}`: ⏳ {delta} día(s) (expira el {exp_date.isoformat()})\n"
-
-    # Permisos Disney
-    if user_has_disney_code_permission(user_id):
-        disney_dict = load_disney_code_access()
-        if user_id in disney_dict:
-            exp_date = disney_dict[user_id]
-            if exp_date is None:
-                info += "\n✅ Tienes *permiso ilimitado* para extraer códigos de Disney+."
-            else:
-                delta = (exp_date - datetime.now().date()).days
-                if delta < 0:
-                    info += "\n❌ Tu permiso para extraer códigos de Disney+ está **expirado**."
-                else:
-                    info += f"\n⏳ Permiso Disney+ hasta {exp_date.isoformat()} (faltan {delta} días)."
-        else:
-            info += "\n✅ Tienes permiso para extraer códigos de Disney+ (sin fecha registrada)."
-    else:
-        info += "\n❌ No tienes permiso para extraer códigos de Disney+."
-
-    # Permisos Netflix
-    if user_has_netflix_code_permission(user_id):
-        netflix_dict = load_netflix_code_access()
-        if user_id in netflix_dict:
-            exp_date = netflix_dict[user_id]
-            if exp_date is None:
-                info += "\n✅ Tienes *permiso ilimitado* para extraer códigos de Netflix."
-            else:
-                delta = (exp_date - datetime.now().date()).days
-                if delta < 0:
-                    info += "\n❌ Tu permiso para extraer códigos de Netflix está **expirado**."
-                else:
-                    info += f"\n⏳ Permiso Netflix hasta {exp_date.isoformat()} (faltan {delta} días)."
-        else:
-            info += "\n✅ Tienes permiso para extraer códigos de Netflix (sin fecha registrada)."
-    else:
-        info += "\n❌ No tienes permiso para extraer códigos de Netflix."
-
-    if is_admin(user_id):
-        info += "\n\n👑 *Eres administrador*, con acceso total."
-
-    await update.message.reply_text(info, parse_mode="Markdown")
 
 # =============================================================================
 # COMANDOS PARA DIFUSIÓN (BROADCAST)
@@ -1043,21 +1019,16 @@ async def broadcastusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     admin_user_id = update.effective_user.id
     
-    # Verificar que quien ejecuta sea admin
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
-    # Validar que se haya proporcionado el mensaje
     if not context.args:
         await update.message.reply_text("Uso: /broadcastusers <mensaje>")
         return
 
-    # Construir el texto que se enviará a todos los usuarios
     message_to_send = " ".join(context.args)
 
-    # Cargar la lista de usuarios (IDs) desde tu base de datos
-    # users_dict es un diccionario: { user_id: {email: date, ...}, ...}
     users_dict = load_users()
     all_user_ids = list(users_dict.keys())
 
@@ -1067,11 +1038,9 @@ async def broadcastusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=user_id, text=message_to_send)
             enviados += 1
         except Exception as e:
-            # Puede fallar si el usuario bloqueó el bot o si es un chat_id inválido
             logging.warning(f"No se pudo enviar mensaje a {user_id}: {e}")
 
     await update.message.reply_text(f"Mensaje enviado a {enviados} usuarios.")
-
 
 async def broadcastadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -1079,18 +1048,15 @@ async def broadcastadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Uso: /broadcastadmins <mensaje>
     """
     admin_user_id = update.effective_user.id
-    
-    # Verificar que quien ejecuta sea admin
+
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
 
-    # Validar que se haya proporcionado el mensaje
     if not context.args:
         await update.message.reply_text("Uso: /broadcastadmins <mensaje>")
         return
 
-    # Construir el texto que se enviará
     message_to_send = " ".join(context.args)
 
     enviados = 0
@@ -1102,7 +1068,6 @@ async def broadcastadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logging.warning(f"No se pudo enviar mensaje al admin {admin_id}: {e}")
 
     await update.message.reply_text(f"Mensaje enviado a {enviados} administradores.")
-
 
 # =============================================================================
 # 8. COMANDOS DE ADMINISTRACIÓN
@@ -1242,7 +1207,6 @@ async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"✅ Usuario {target_user_id} eliminado completamente.")
 
-# === NUEVOS COMANDOS PARA NETFLIX: /accessnetflixcode /removenetflixcode
 async def accessnetflixcode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/accessnetflixcode con args: {context.args}")
@@ -1312,7 +1276,6 @@ async def removenetflixcode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"⚠️ El usuario {target_user_id} no tenía permiso de extraer códigos de Netflix.")
 
-# === NUEVOS COMANDOS PARA DISNEY: /accessdisneycode /removedisneycode
 async def accessdisneycode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_user_id = update.effective_user.id
     user_log(admin_user_id, f"/accessdisneycode con args: {context.args}")
@@ -1577,37 +1540,28 @@ if __name__ == "__main__":
 
     # Handlers principales
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
+    # (Eliminados los comandos /help y /mi_perfil)
+
     application.add_handler(CallbackQueryHandler(handle_buttons))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, email_input))
     application.add_handler(CommandHandler("cancel", cancel))
 
-    # /mi_perfil
-    application.add_handler(CommandHandler("mi_perfil", mi_perfil))
+    # Comandos de difusión
+    application.add_handler(CommandHandler("broadcastusers", broadcastusers))
+    application.add_handler(CommandHandler("broadcastadmins", broadcastadmins))
 
-    # Admin commands (para correos)
+    # Comandos de administración (para correos y permisos)
     application.add_handler(CommandHandler("adduseremail", adduseremail))
     application.add_handler(CommandHandler("removeemail", removeemail))
     application.add_handler(CommandHandler("removeusertotal", removeusertotal))
-
-    # Admin commands (para permiso de códigos)
     application.add_handler(CommandHandler("accessnetflixcode", accessnetflixcode))
     application.add_handler(CommandHandler("removenetflixcode", removenetflixcode))
     application.add_handler(CommandHandler("accessdisneycode", accessdisneycode))
     application.add_handler(CommandHandler("removedisneycode", removedisneycode))
-
-    # Admin commands (mostrar usuarios)
     application.add_handler(CommandHandler("showuser", showuser))
     application.add_handler(CommandHandler("listusers", listusers))
-
-    # Admin commands (administradores)
     application.add_handler(CommandHandler("addadmin", addadmin))
     application.add_handler(CommandHandler("removeadmin", removeadmin))
-
-    # Admin commands
-    application.add_handler(CommandHandler("broadcastusers", broadcastusers))
-    application.add_handler(CommandHandler("broadcastadmins", broadcastadmins))
-
 
     # Ejecuta el bot
     application.run_polling()
