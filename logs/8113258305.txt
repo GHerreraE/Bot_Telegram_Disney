@@ -570,3 +570,13 @@
 2025-02-18 17:06:04.641911: /adduseremail con args: ['7126067864', 'disneycito41@dmarcial.com', '30']
 2025-02-18 17:06:17.155404: /accessdisneycode con args: ['7126067864', '30']
 2025-02-18 17:06:24.228550: /showuser con args: ['7126067864']
+2025-02-19 07:17:59.012443: /showuser con args: []
+2025-02-19 07:18:03.625711: /start
+2025-02-19 07:18:05.731202: Seleccionó Disney+
+2025-02-19 07:18:14.014567: Ingresó correo 'disneycito29@dmarcial.com' para disney
+2025-02-19 07:18:40.036555: /start
+2025-02-19 07:18:41.840786: Seleccionó Disney+
+2025-02-19 07:18:47.111312: Ingresó correo 'disneycito41@dmarcial.com' para disney
+2025-02-19 07:18:48.281213: Código Disney: 292859
+2025-02-19 07:37:22.179583: /start
+2025-02-19 07:37:24.387377: Info user
