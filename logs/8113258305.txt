@@ -582,3 +582,11 @@
 2025-02-19 07:37:24.387377: Info user
 2025-02-19 13:31:51.238235: /start
 2025-02-19 13:31:54.420433: Cancel request
+2025-02-19 19:05:35.070721: /adduseremail con args: ['236428284', 'disneycito42@dmarcial.com', '30']
+2025-02-19 19:05:48.923590: /accessdisneycode con args: ['236428284', '30']
+2025-02-19 19:05:56.093350: /showuser con args: ['236428284']
+2025-02-19 19:06:16.617585: /start
+2025-02-19 19:06:18.580223: Seleccionó Disney+
+2025-02-19 19:06:26.000894: Ingresó correo 'disneycito42@dmarcial.com' para disney
+2025-02-19 19:06:27.012831: Código Disney: 398457
+2025-02-19 19:30:23.450339: /listusers
