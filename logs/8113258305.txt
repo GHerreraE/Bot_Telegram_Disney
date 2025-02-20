@@ -590,3 +590,6 @@
 2025-02-19 19:06:26.000894: Ingresó correo 'disneycito42@dmarcial.com' para disney
 2025-02-19 19:06:27.012831: Código Disney: 398457
 2025-02-19 19:30:23.450339: /listusers
+2025-02-20 11:29:57.877499: /listusers
+2025-02-20 11:30:17.857684: /removeusertotal con args: ['1048035220']
+2025-02-20 11:30:22.477764: /listusers
