@@ -609,3 +609,10 @@
 2025-02-21 04:40:28.791797: Ingresó correo 'disneycito42@dmarcial.com' para disney
 2025-02-21 04:40:30.401460: Código Disney: 419535
 2025-02-21 04:42:35.116489: /listusers
+2025-02-21 04:49:35.601400: /start
+2025-02-21 04:49:37.513300: Seleccionó Disney+
+2025-02-21 04:49:47.334656: Ingresó correo 'ddbdudbdub@dmarcial.com' para disney
+2025-02-21 04:53:43.413955: /start
+2025-02-21 04:53:45.369821: Seleccionó Disney+
+2025-02-21 04:53:54.003078: Ingresó correo 'disneycito41@dmarcial.com' para disney
+2025-02-21 04:53:55.037870: Código Disney: 294169
