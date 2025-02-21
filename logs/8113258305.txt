@@ -616,3 +616,10 @@
 2025-02-21 04:53:45.369821: Seleccionó Disney+
 2025-02-21 04:53:54.003078: Ingresó correo 'disneycito41@dmarcial.com' para disney
 2025-02-21 04:53:55.037870: Código Disney: 294169
+2025-02-21 09:40:06.909057: /start
+2025-02-21 09:40:11.466369: Seleccionó Disney+
+2025-02-21 09:40:16.996365: Ingresó correo 'disneycito41@dmarcial.com' para disney
+2025-02-21 09:40:18.214967: Código Disney: 294169
+2025-02-21 09:42:57.958617: /start
+2025-02-21 09:43:01.127991: Info user
+2025-02-21 09:43:18.927879: Cancel request
