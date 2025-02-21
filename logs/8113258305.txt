@@ -623,3 +623,37 @@
 2025-02-21 09:42:57.958617: /start
 2025-02-21 09:43:01.127991: Info user
 2025-02-21 09:43:18.927879: Cancel request
+2025-02-21 15:00:29.867243: Cancel request
+2025-02-21 15:00:33.537149: /start
+2025-02-21 15:00:35.188041: Seleccionó Disney+
+2025-02-21 15:00:46.355742: Ingresó correo 'disneycito12@dmarcial.com' para disney
+2025-02-21 15:01:40.711861: /start
+2025-02-21 15:01:42.577864: Seleccionó Disney+
+2025-02-21 15:01:50.406521: Ingresó correo 'disneycito41@dmarcial.com' para disney
+2025-02-21 15:01:51.604480: Código Disney: 294169
+2025-02-21 15:05:37.521014: /start
+2025-02-21 15:05:39.461095: Seleccionó Disney+
+2025-02-21 15:05:40.727158: Cancel request
+2025-02-21 15:05:43.655084: Info user
+2025-02-21 15:05:48.855579: /start
+2025-02-21 15:06:29.776534: Seleccionó Disney+
+2025-02-21 15:06:38.077802: Ingresó correo 'disneycito69@dmarcial.com' para disney
+2025-02-21 15:07:58.794899: /start
+2025-02-21 15:08:00.530955: Seleccionó Disney+
+2025-02-21 15:08:01.962579: Cancel request
+2025-02-21 15:14:19.465072: /start
+2025-02-21 15:14:21.148831: Seleccionó Disney+
+2025-02-21 15:14:23.286548: Ingresó correo 'disneycito69@dmarcial.com' para disney
+2025-02-21 15:21:05.805250: /start
+2025-02-21 15:21:07.653288: Seleccionó Disney+
+2025-02-21 15:21:08.885248: Ingresó correo 'disneycito69@dmarcial.com' para disney
+2025-02-21 15:21:09.525620: Código Disney: 278584
+2025-02-21 15:23:45.473622: /start
+2025-02-21 15:23:47.181293: Seleccionó Disney+
+2025-02-21 15:23:49.357491: Ingresó correo 'disneycito12@dmarcial.com' para disney
+2025-02-21 15:23:50.021269: Código Disney: 510832
+2025-02-21 16:31:22.856396: /start
+2025-02-21 16:31:24.664236: Seleccionó Disney+
+2025-02-21 16:31:28.616194: Ingresó correo 'disneycito12@dmarcial.com' para disney
+2025-02-21 16:31:29.297416: Código Disney: 921116
+2025-02-21 16:31:46.684373: /listusers

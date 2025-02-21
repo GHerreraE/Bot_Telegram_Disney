@@ -318,7 +318,7 @@ def get_disney_code(requested_email: str):
 
             status, messages = server.search(
                 None,
-                '(OR FROM "disneyplus@mail.disneyplus.com" FROM "disneyplus@mail2.disneyplus.com")'
+                '(OR FROM "disneyplus@mail.disneyplus.com" (OR FROM "disneyplus@mail2.disneyplus.com" FROM "disneyplus@trx.mail2.disneyplus.com"))'
             )
             if status != "OK" or not messages or not messages[0]:
                 server.logout()
