@@ -664,3 +664,36 @@
 2025-02-22 10:54:45.262401: /showuser con args: ['236428284']
 2025-02-22 16:23:07.466579: /start
 2025-02-22 16:23:27.411341: /removeadmin con args: []
+2025-02-22 17:02:53.212397: Seleccionó Disney+
+2025-02-22 17:02:55.250418: Ingresó correo 'disneycito43@dmarcial.com' para disney
+2025-02-22 17:02:57.080239: Código Disney: 717549
+2025-02-22 17:03:01.257207: /start
+2025-02-22 17:03:02.641496: Seleccionó Disney+
+2025-02-22 17:03:03.786400: Ingresó correo 'disneycito43@dmarcial.com' para disney
+2025-02-22 17:03:05.362115: Código Disney: 717549
+2025-02-22 17:03:13.028102: /start
+2025-02-22 17:03:14.701903: Seleccionó Disney+
+2025-02-22 17:03:16.028177: Ingresó correo 'disneycito43@dmarcial.com' para disney
+2025-02-22 17:03:17.632015: Código Disney: 717549
+2025-02-22 17:03:25.510913: /start
+2025-02-22 17:03:27.234161: Seleccionó Disney+
+2025-02-22 17:03:28.283640: Ingresó correo 'disneycito43@dmarcial.com' para disney
+2025-02-22 17:03:28.937877: Código Disney: 971910
+2025-02-22 17:06:22.341837: /start
+2025-02-22 17:06:24.015314: Seleccionó Disney+
+2025-02-22 17:06:25.101608: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 17:06:30.396087: /start
+2025-02-22 17:06:33.099809: Seleccionó Disney+
+2025-02-22 17:06:33.993895: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 17:06:34.677864: Código Disney: 031485
+2025-02-22 17:09:08.435470: /start
+2025-02-22 17:09:10.415913: Seleccionó Disney+
+2025-02-22 17:09:11.449944: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 17:09:12.105607: Código Disney: 843027
+2025-02-22 17:09:50.035350: /start
+2025-02-22 17:09:56.583079: Seleccionó Disney+
+2025-02-22 17:09:57.991519: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 17:09:58.662700: Código Disney: 230711
+2025-02-22 17:46:26.197502: /start
+2025-02-22 17:46:28.466059: Info user
+2025-02-22 17:58:19.256788: /start
