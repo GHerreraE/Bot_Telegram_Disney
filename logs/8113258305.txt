@@ -697,3 +697,50 @@
 2025-02-22 17:46:26.197502: /start
 2025-02-22 17:46:28.466059: Info user
 2025-02-22 17:58:19.256788: /start
+2025-02-22 21:02:32.197042: /start
+2025-02-22 21:02:34.574664: Seleccionó Max (submenú)
+2025-02-22 21:02:36.666752: Max => Link Restablecimiento
+2025-02-22 21:02:44.600974: Ingresó correo 'maxcito12@dmarcial.com' para max_reset_link
+2025-02-22 21:02:45.811298: Link Max: https://ablink.marketing.max.com/ls/click?upn=u001.kWvKDHDPNYq15TYnWc-2F8-2Bi-2Buj66IwJUX1H0E7Z4w9dH-2FSTIxeJRmdtJlL1Rm3-2Bt0vTtWrr012IiBVm9kDurnyXeIO9MbjJp3SmDCCFmPe7lATHLvFTgiZmhCpYSCXdIrmZ-e_SyfpcEIzYHu8prfLkRkIE-2FsiSfCdbguiv2A2yhYmPKvbYWTmbEAmdn-2BddhvX9ZMLOvH9-2BRHz-2FlHDJ4lPA-2FkzAgayCn3Bf35hZgQd06AZSBvavtV9NkEUnNg22aS14JP4GSTNK3x0tM-2F8VaXQzjLFJUQebZbrsZF5E00JKBXIcMf1uYIAAmTOW3nNILKTVoNjQU5wmRGAJsChdQEQXnTFaJPhu4ohsJD7X5uwNhv83mF7BPI8uGBwbrRSnK0LYqaPHANyz9qIZmoqaXnmM4HgNkeWs2E3oEroXDg9PwvF-2FtOvVBdgzhtN-2Bp4xnlTEAhWctabx7RkshX9FfWBqRyZBtIzXCwUW0ZekquIzakHH23kJNDNJTPzcqotqQZ9-2B7U-2BKml66jd8HHivDZBnLN1bIT5RXNQ0RlCZNX67w4IG-2FZYKSbAhF8-2BW6WvtPtmQ9eefeVIl8AM9x1sFiKs97sZml1bI2d-2Bbqz9L3YAnVYmXS-2FEhTgb7JLHHpy-2Bb4pf-2BYcyQSxCSLqLmLbItnYIFGz9jATr-2FfIQljfeaekq1ydW8WpcZbYFz8LjlOBdBjZL3cZC6JYWGxvZIM6zfe0W-2FoeYgqFOmeiQ-2B7BnxJlOjeX6oy1Ma-2FBbdJEu0ZZGpRlpWaWmaA54aj03XJZYRajFSLGUsaFmamdL03aVW0cofGuoTnz4AfMgbjycpbnXXIYPcb1BCyAHlDftieOJjlQwFwkdMnA30tSYvlj1q64kkoVUAr87I-3D
+2025-02-22 21:06:36.352088: /start
+2025-02-22 21:09:03.937077: Info user
+2025-02-22 21:09:15.086640: /accessmax con args: []
+2025-02-22 21:09:20.508274: /removeaccessmax con args: []
+2025-02-22 21:17:46.163958: /adduseremail con args: ['236428284', 'maxcito2@dmarcial.com', 'maxcito3@dmarcial.com', 'maxcito4@dmarcial.com', '13']
+2025-02-22 21:18:29.967009: /adduseremail con args: ['236428284', 'maxcito5@dmarcial.com', 'maxcito6@dmarcial.com', 'maxcito7@dmarcial.com', 'maxcito8@dmarcial.com', 'maxcito9@dmarcial.com', '16']
+2025-02-22 21:19:12.855740: /adduseremail con args: ['236428284', 'maxcito12@dmarcial.com', 'maxcito13@dmarcial.com', '26']
+2025-02-22 21:19:37.342965: /accessmax con args: []
+2025-02-22 21:19:58.745171: /accessmax con args: ['236428284', '0']
+2025-02-22 21:20:09.117991: /showuser con args: ['236428284']
+2025-02-22 21:20:53.701131: /start
+2025-02-22 21:20:55.926741: Seleccionó Max (submenú)
+2025-02-22 21:20:58.018198: Max => Link Restablecimiento
+2025-02-22 21:21:04.451203: Ingresó correo 'maxcito12@dmarcial.com' para max_reset_link
+2025-02-22 21:21:05.416607: Link Max: https://ablink.marketing.max.com/ls/click?upn=u001.kWvKDHDPNYq15TYnWc-2F8-2Bi-2Buj66IwJUX1H0E7Z4w9dH-2FSTIxeJRmdtJlL1Rm3-2Bt0vTtWrr012IiBVm9kDurnyXeIO9MbjJp3SmDCCFmPe7lATHLvFTgiZmhCpYSCXdIrmZ-e_SyfpcEIzYHu8prfLkRkIE-2FsiSfCdbguiv2A2yhYmPKvbYWTmbEAmdn-2BddhvX9ZMLOvH9-2BRHz-2FlHDJ4lPA-2FkzAgayCn3Bf35hZgQd06AZSBvavtV9NkEUnNg22aS14JP4GSTNK3x0tM-2F8VaXQzjLFJUQebZbrsZF5E00JKBXIcMf1uYIAAmTOW3nNILKTVoNjQU5wmRGAJsChdQEQXnTFaJPhu4ohsJD7X5uwNhv83mF7BPI8uGBwbrRSnK0LYqaPHANyz9qIZmoqaXnmM4HgNkeWs2E3oEroXDg9PwvF-2FtOvVBdgzhtN-2Bp4xnlTEAhWctabx7RkshX9FfWBqRyZBtIzXCwUW0ZekquIzakHH23kJNDNJTPzcqotqQZ9-2B7U-2BKml66jd8HHivDZBnLN1bIT5RXNQ0RlCZNX67w4IG-2FZYKSbAhF8-2BW6WvtPtmQ9eefeVIl8AM9x1sFiKs97sZml1bI2d-2Bbqz9L3YAnVYmXS-2FEhTgb7JLHHpy-2Bb4pf-2BYcyQSxCSLqLmLbItnYIFGz9jATr-2FfIQljfeaekq1ydW8WpcZbYFz8LjlOBdBjZL3cZC6JYWGxvZIM6zfe0W-2FoeYgqFOmeiQ-2B7BnxJlOjeX6oy1Ma-2FBbdJEu0ZZGpRlpWaWmaA54aj03XJZYRajFSLGUsaFmamdL03aVW0cofGuoTnz4AfMgbjycpbnXXIYPcb1BCyAHlDftieOJjlQwFwkdMnA30tSYvlj1q64kkoVUAr87I-3D
+2025-02-22 21:24:18.891308: /listusers
+2025-02-22 21:24:53.296058: /adduseremail con args: ['7126067864', 'maxcito11@dmarcial.com', '22']
+2025-02-22 21:25:16.289583: /accessmax con args: ['7126067864', '22']
+2025-02-22 21:25:22.771548: /showuser con args: ['7126067864']
+2025-02-22 21:27:25.878122: /showuser con args: ['6698623757']
+2025-02-22 21:31:03.996488: /showuser con args: ['731397974']
+2025-02-22 21:33:47.670434: /listusers
+2025-02-22 21:41:44.392961: /start
+2025-02-22 21:41:52.539252: Seleccionó Max (submenú)
+2025-02-22 21:41:54.302015: Cancel request
+2025-02-22 21:41:57.273754: /start
+2025-02-22 21:42:01.349517: Info user
+2025-02-22 21:42:04.050936: /start
+2025-02-22 21:42:05.828673: Ayuda
+2025-02-22 21:42:07.494535: Volvió al menú principal
+2025-02-22 21:43:39.201844: /start
+2025-02-22 21:44:15.606821: Info user
+2025-02-22 21:44:19.868517: /start
+2025-02-22 21:44:22.655934: Seleccionó Max (submenú)
+2025-02-22 21:44:24.513247: Cancel request
+2025-02-22 21:48:20.950285: /listusers
+2025-02-22 21:51:54.455845: /adduseremail con args: ['6698623757', 'disneycito47@dmarcial.com', 'disneycito48@dmarcial.com', 'disneycito49@dmarcial.com', 'disneycito50@dmarcial.com', 'disneycito51@dmarcial.com', '30']
+2025-02-22 21:52:22.381952: /showuser con args: ['6698623757']
+2025-02-22 21:53:00.138036: /accessdisneycode con args: ['6698623757', '16']
+2025-02-22 21:53:06.555023: /showuser con args: ['6698623757']
+2025-02-22 21:53:30.255571: /accessdisneycode con args: ['6698623757', '30']
+2025-02-22 21:53:37.172427: /showuser con args: ['6698623757']

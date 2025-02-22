@@ -83,9 +83,9 @@ if os.path.exists('help_phone.txt'):
 
 HELP_TEXT = (
     "ℹ️ *Ayuda del Bot*\n\n"
-    "Este bot te permite obtener códigos de *Disney+* o *Netflix*, "
-    "si tienes permiso sobre el correo. Y, para extraer códigos, "
-    "debes contar con un permiso especial específico (o ser admin).\n\n"
+    "Este bot te permite obtener códigos de *Disney+* o *Netflix* (o links para Max), "
+    "si tienes permiso sobre el correo. Para extraer ciertos datos, "
+    "debes contar con un permiso especial (o ser admin).\n\n"
     "1. Pulsa un botón en el menú principal.\n"
     "2. Ingresa tu correo.\n"
     "3. Te enviaremos el código o link si lo encontramos (y tienes permiso).\n\n"
@@ -190,17 +190,14 @@ def user_has_valid_access(user_id: int, email_address: str) -> bool:
     return today <= exp_date
 
 # =============================================================================
-# 4. BASE DE DATOS DE PERMISO DE CÓDIGOS
-#    (Netflix y Disney en archivos separados)
+# 4. BASE DE DATOS DE PERMISO DE CÓDIGOS (Netflix, Disney) y LINKS (Max)
 # =============================================================================
 
 NETFLIX_CODE_FILE = "netflix_code_db.txt"
 DISNEY_CODE_FILE = "disney_code_db.txt"
+MAX_LINK_FILE = "max_link_db.txt"
 
 def load_netflix_code_access():
-    """
-    Retorna un dict con user_id -> date or None
-    """
     code_dict = {}
     if not os.path.exists(NETFLIX_CODE_FILE):
         return code_dict
@@ -236,9 +233,6 @@ def save_netflix_code_access(code_dict):
                 f.write(f"{uid} {exp_date.isoformat()}\n")
 
 def load_disney_code_access():
-    """
-    Retorna un dict con user_id -> date or None
-    """
     code_dict = {}
     if not os.path.exists(DISNEY_CODE_FILE):
         return code_dict
@@ -273,21 +267,48 @@ def save_disney_code_access(code_dict):
             else:
                 f.write(f"{uid} {exp_date.isoformat()}\n")
 
-def user_has_netflix_code_permission(user_id: int) -> bool:
-    if is_admin(user_id):
-        return True
+# --- MAX ---
 
-    code_dict = load_netflix_code_access()
-    if user_id not in code_dict:
-        return False
+def load_max_link_access():
+    link_dict = {}
+    if not os.path.exists(MAX_LINK_FILE):
+        return link_dict
 
-    exp_date = code_dict[user_id]
-    if exp_date is None:
-        return True
+    with open(MAX_LINK_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            try:
+                uid = int(parts[0])
+            except ValueError:
+                continue
+            date_str = parts[1]
+            if date_str.lower() == "none":
+                link_dict[uid] = None
+            else:
+                try:
+                    link_dict[uid] = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except ValueError:
+                    link_dict[uid] = None
+    return link_dict
 
-    today = datetime.now().date()
-    return today <= exp_date
+def save_max_link_access(link_dict):
+    with open(MAX_LINK_FILE, 'w', encoding='utf-8') as f:
+        for uid, exp_date in link_dict.items():
+            if exp_date is None:
+                f.write(f"{uid} None\n")
+            else:
+                f.write(f"{uid} {exp_date.isoformat()}\n")
 
+# =============================================================================
+# 5. FUNCIONES PARA DISNEY (códigos), NETFLIX (códigos), MAX (link)
+# =============================================================================
+
+# ---- DISNEY ----
 def user_has_disney_code_permission(user_id: int) -> bool:
     if is_admin(user_id):
         return True
@@ -302,10 +323,6 @@ def user_has_disney_code_permission(user_id: int) -> bool:
 
     today = datetime.now().date()
     return today <= exp_date
-
-# =============================================================================
-# 5. FUNCIONES PARA DISNEY+ Y NETFLIX
-# =============================================================================
 
 def get_disney_code(requested_email: str):
     socket.setdefaulttimeout(15)
@@ -325,8 +342,6 @@ def get_disney_code(requested_email: str):
                 continue
 
             email_ids = messages[0].split()
-
-            # Mantener solo los últimos 50
             if len(email_ids) > 50:
                 email_ids = email_ids[-50:]
 
@@ -339,14 +354,12 @@ def get_disney_code(requested_email: str):
                     if isinstance(response_part, tuple):
                         msg_obj = email.message_from_bytes(response_part[1])
 
-                        # Extraer destinatarios y normalizarlos
                         recipients = []
                         for header_key, header_value in msg_obj.items():
                             if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
                                 if header_value:
                                     recipients.extend([addr.strip().lower() for addr in header_value.split(",")])
 
-                        # Coincidencia exacta con el correo solicitado
                         if not any(recipient == requested_email for recipient in recipients):
                             continue
 
@@ -397,6 +410,22 @@ def extract_6_digit_code(msg_obj):
                 return match.group(0)
     return None
 
+# ---- NETFLIX ----
+def user_has_netflix_code_permission(user_id: int) -> bool:
+    if is_admin(user_id):
+        return True
+
+    code_dict = load_netflix_code_access()
+    if user_id not in code_dict:
+        return False
+
+    exp_date = code_dict[user_id]
+    if exp_date is None:
+        return True
+
+    today = datetime.now().date()
+    return today <= exp_date
+
 def get_netflix_reset_link(requested_email: str):
     return _search_netflix_email(requested_email, _parse_netflix_link)
 
@@ -430,8 +459,6 @@ def _search_netflix_email(requested_email: str, parse_function):
                 continue
 
             email_ids = messages[0].split()
-
-            # Mantener solo los últimos 50
             if len(email_ids) > 50:
                 email_ids = email_ids[-50:]
 
@@ -593,14 +620,106 @@ def _search_link_by_regex(msg_obj, regex_pattern):
                 return link_match.group(1)
     return None
 
+# ---- MAX ----
+def user_has_max_link_permission(user_id: int) -> bool:
+    if is_admin(user_id):
+        return True
+
+    link_dict = load_max_link_access()
+    if user_id not in link_dict:
+        return False
+
+    exp_date = link_dict[user_id]
+    if exp_date is None:
+        return True
+
+    today = datetime.now().date()
+    return today <= exp_date
+
+def get_max_reset_link(requested_email: str):
+    return _search_max_email(requested_email, _parse_max_reset_link)
+
+def _search_max_email(requested_email: str, parse_function):
+    socket.setdefaulttimeout(15)
+
+    for (acc_email, acc_password) in EMAIL_ACCOUNTS:
+        try:
+            server = imaplib.IMAP4_SSL(IMAP_HOST)
+            server.login(acc_email, acc_password)
+            server.select("INBOX")
+
+            status, messages = server.search(
+                None,
+                '(FROM "no-reply@marketing.max.com")'
+            )
+            if status != "OK" or not messages or not messages[0]:
+                server.logout()
+                continue
+
+            email_ids = messages[0].split()
+            if len(email_ids) > 50:
+                email_ids = email_ids[-50:]
+
+            for email_id in reversed(email_ids):
+                status_msg, msg_data = server.fetch(email_id, "(RFC822)")
+                if status_msg != "OK":
+                    continue
+
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg_obj = email.message_from_bytes(response_part[1])
+
+                        recipients = []
+                        for header_key, header_value in msg_obj.items():
+                            if header_key.lower() in ["to", "cc", "bcc", "delivered-to", "x-original-to"]:
+                                if header_value:
+                                    recipients.extend([addr.strip().lower() for addr in header_value.split(",")])
+
+                        if not any(recipient == requested_email for recipient in recipients):
+                            continue
+
+                        date_header = msg_obj["Date"]
+                        parsed_date = email.utils.parsedate_to_datetime(date_header).astimezone(timezone.utc)
+                        now = datetime.now(timezone.utc)
+                        diff = now - parsed_date
+                        total_minutes = int(diff.total_seconds() // 60)
+
+                        extracted_link = parse_function(msg_obj)
+                        if extracted_link:
+                            server.logout()
+                            return extracted_link, total_minutes
+
+            server.logout()
+        except Exception as e:
+            logging.error(f"Error con la cuenta {acc_email} al buscar Max: {e}")
+
+    return None, None
+
+def _parse_max_reset_link(msg_obj):
+    max_link_regex = r'(https?://[^"\s]+marketing\.max\.com[^"\s]+)'
+
+    if msg_obj.is_multipart():
+        for part in msg_obj.walk():
+            ctype = part.get_content_type()
+            if ctype in ["text/html", "text/plain"]:
+                content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                match = re.search(max_link_regex, content)
+                if match:
+                    return match.group(1)
+    else:
+        ctype = msg_obj.get_content_type()
+        if ctype in ["text/html", "text/plain"]:
+            content = msg_obj.get_payload(decode=True).decode('utf-8', errors='ignore')
+            match = re.search(max_link_regex, content)
+            if match:
+                return match.group(1)
+    return None
+
 # =============================================================================
 # 6. ESCAPAR TEXTO PARA MARKDOWN
 # =============================================================================
 
 def escape_markdown(text: str) -> str:
-    """
-    Escapa los caracteres que podrían causar problemas en Markdown (versión 1).
-    """
     text = text.replace("_", "\\_")
     text = text.replace("*", "\\*")
     text = text.replace("`", "\\`")
@@ -616,11 +735,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name or "Usuario"
     user_log(user_id, "/start")
 
-    # Se agrega la nueva opción "Info user" en el menú principal
     keyboard = [
         [
             InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
-            InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
+            InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix"),
+            InlineKeyboardButton("Max 💜", callback_data="submenu_max")
         ],
         [
             InlineKeyboardButton("Info user", callback_data="info_user"),
@@ -729,7 +848,35 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['awaiting_email_for'] = 'netflix_update_household'
 
-    # Nueva opción "Info user" para reemplazar /mi_perfil
+    elif query.data == "submenu_max":
+        user_log(user_id, "Seleccionó Max (submenú)")
+        keyboard = [
+            [InlineKeyboardButton("Link Restablecimiento", callback_data="max_reset_link")],
+            [InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text="¿Qué deseas de Max?",
+            reply_markup=reply_markup
+        )
+
+    elif query.data == "max_reset_link":
+        user_log(user_id, "Max => Link Restablecimiento")
+        if not user_has_max_link_permission(user_id):
+            user_log(user_id, "Denegado. No tiene acceso para extraer link de Max.")
+            await query.edit_message_text(
+                text="❌ No tienes permiso para extraer enlaces de Max."
+            )
+            return
+
+        keyboard = [[InlineKeyboardButton("Cancelar ❌", callback_data="cancel")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text="Ingresa el correo para buscar el link de restablecimiento de Max:",
+            reply_markup=reply_markup
+        )
+        context.user_data['awaiting_email_for'] = 'max_reset_link'
+
     elif query.data == "info_user":
         user_log(user_id, "Info user")
         users_dict = load_users()
@@ -788,6 +935,24 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             info += "\n❌ No tienes permiso para extraer códigos de Netflix."
 
+        # Permisos Max
+        if user_has_max_link_permission(user_id):
+            link_dict = load_max_link_access()
+            if user_id in link_dict:
+                exp_date = link_dict[user_id]
+                if exp_date is None:
+                    info += "\n✅ Tienes *permiso ilimitado* para extraer enlaces de Max."
+                else:
+                    delta = (exp_date - datetime.now().date()).days
+                    if delta < 0:
+                        info += "\n❌ Tu permiso para extraer enlaces de Max está **expirado**."
+                    else:
+                        info += f"\n⏳ Permiso Max hasta {exp_date.isoformat()} (faltan {delta} días)."
+            else:
+                info += "\n✅ Tienes permiso para extraer enlaces de Max (sin fecha registrada)."
+        else:
+            info += "\n❌ No tienes permiso para extraer enlaces de Max."
+
         if is_admin(user_id):
             info += "\n\n👑 *Eres administrador*, con acceso total."
 
@@ -813,7 +978,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [
                 InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
-                InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
+                InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix"),
+                InlineKeyboardButton("Max 💜", callback_data="submenu_max")
             ],
             [
                 InlineKeyboardButton("Info user", callback_data="info_user"),
@@ -835,7 +1001,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not awaiting:
         return
 
-    # Validación del formato básico del correo
     if "@" not in requested_email:
         await update.message.reply_text("❌ El formato del correo es incorrecto.")
         return
@@ -844,7 +1009,6 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_log(user_id, f"Ingresó correo '{requested_email}' para {awaiting}")
     context.user_data['awaiting_email_for'] = None
 
-    # Verificar acceso al correo
     if not user_has_valid_access(user_id, requested_email):
         user_log(user_id, "Acceso denegado o expirado al correo")
         await update.message.reply_text(
@@ -854,6 +1018,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔄 Buscando, por favor espera...")
 
+    # DISNEY
     if awaiting == "disney":
         if not user_has_disney_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Disney")
@@ -874,6 +1039,7 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("⚠️ No se encontró un código reciente de Disney+")
 
+    # NETFLIX
     elif awaiting == "netflix_reset_link":
         if not user_has_netflix_code_permission(user_id):
             user_log(user_id, "Denegado. No tiene code access para Netflix (reset link)")
@@ -960,6 +1126,27 @@ async def email_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "⚠️ No se encontró ningún enlace de 'Actualizar Hogar' en tu correo de Netflix."
             )
 
+    # MAX
+    elif awaiting == "max_reset_link":
+        if not user_has_max_link_permission(user_id):
+            user_log(user_id, "Denegado. No tiene acceso para extraer link de Max")
+            await update.message.reply_text(
+                "❌ No tienes permiso para extraer enlaces de Max."
+            )
+            return
+
+        link, minutes = get_max_reset_link(requested_email)
+        if link:
+            link_esc = escape_markdown(link)
+            user_log(user_id, f"Link Max: {link}")
+            await update.message.reply_text(
+                f"🔗 Link de restablecimiento Max:\n`{link_esc}`\n\n"
+                f"⌛ Recibido hace {minutes} minutos.",
+                parse_mode="Markdown"
+            )
+        else:
+            await update.message.reply_text("⚠️ No se encontró un link reciente de Max.")
+
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_log(user_id, "Cancel request")
@@ -972,7 +1159,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [
                 [
                     InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
-                    InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
+                    InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix"),
+                    InlineKeyboardButton("Max 💜", callback_data="submenu_max")
                 ],
                 [
                     InlineKeyboardButton("Info user", callback_data="info_user"),
@@ -992,7 +1180,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [
                 [
                     InlineKeyboardButton("Disney+ 🏰", callback_data="obtener_codigo_disney"),
-                    InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix")
+                    InlineKeyboardButton("Netflix 🎬", callback_data="submenu_netflix"),
+                    InlineKeyboardButton("Max 💜", callback_data="submenu_max")
                 ],
                 [
                     InlineKeyboardButton("Info user", callback_data="info_user"),
@@ -1013,12 +1202,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =============================================================================
 
 async def broadcastusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Enviar un mensaje a todos los usuarios que estén registrados en tu base de datos.
-    Uso: /broadcastusers <mensaje>
-    """
     admin_user_id = update.effective_user.id
-    
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
@@ -1028,27 +1212,21 @@ async def broadcastusers(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     message_to_send = " ".join(context.args)
-
     users_dict = load_users()
     all_user_ids = list(users_dict.keys())
 
     enviados = 0
-    for user_id in all_user_ids:
+    for uid in all_user_ids:
         try:
-            await context.bot.send_message(chat_id=user_id, text=message_to_send)
+            await context.bot.send_message(chat_id=uid, text=message_to_send)
             enviados += 1
         except Exception as e:
-            logging.warning(f"No se pudo enviar mensaje a {user_id}: {e}")
+            logging.warning(f"No se pudo enviar mensaje a {uid}: {e}")
 
     await update.message.reply_text(f"Mensaje enviado a {enviados} usuarios.")
 
 async def broadcastadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Enviar un mensaje solo a los administradores.
-    Uso: /broadcastadmins <mensaje>
-    """
     admin_user_id = update.effective_user.id
-
     if not is_admin(admin_user_id):
         await update.message.reply_text("❌ No tienes permisos de administrador.")
         return
@@ -1194,7 +1372,7 @@ async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     del users_dict[target_user_id]
     save_users(users_dict)
 
-    # Borrar permisos en ambos ficheros (netflix y disney)
+    # Borrar permisos en Netflix, Disney y Max
     netflix_code_dict = load_netflix_code_access()
     if target_user_id in netflix_code_dict:
         del netflix_code_dict[target_user_id]
@@ -1204,6 +1382,11 @@ async def removeusertotal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if target_user_id in disney_code_dict:
         del disney_code_dict[target_user_id]
         save_disney_code_access(disney_code_dict)
+
+    max_link_dict = load_max_link_access()
+    if target_user_id in max_link_dict:
+        del max_link_dict[target_user_id]
+        save_max_link_access(max_link_dict)
 
     await update.message.reply_text(f"✅ Usuario {target_user_id} eliminado completamente.")
 
@@ -1366,6 +1549,7 @@ async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users_dict = load_users()
     netflix_code_dict = load_netflix_code_access()
     disney_code_dict = load_disney_code_access()
+    max_link_dict = load_max_link_access()
 
     target_user_id_esc = escape_markdown(str(target_user_id))
     msg = [f"**📋 Información de usuario:** `{target_user_id_esc}`\n"]
@@ -1412,6 +1596,20 @@ async def showuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 msg.append(f"\n🔑 **Permiso Netflix:** \n⏳ *Válido hasta {exp_date}* (faltan {delta} días).")
     else:
         msg.append("\n🔑 **Permiso Netflix:** ❌ *No tiene acceso*.")
+
+    # Permiso Max
+    if target_user_id in max_link_dict:
+        exp_date = max_link_dict[target_user_id]
+        if exp_date is None:
+            msg.append("\n🔑 **Permiso Max:** *ilimitado* ✅")
+        else:
+            delta = (exp_date - datetime.now().date()).days
+            if delta < 0:
+                msg.append(f"\n🔑 **Permiso Max:** ❌ *Expirado* (expiró el {exp_date}).")
+            else:
+                msg.append(f"\n🔑 **Permiso Max:** \n⏳ *Válido hasta {exp_date}* (faltan {delta} días).")
+    else:
+        msg.append("\n🔑 **Permiso Max:** ❌ *No tiene acceso*.")
 
     final_text = "\n".join(msg)
     await update.message.reply_text(final_text, parse_mode="Markdown")
@@ -1521,6 +1719,86 @@ async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"✅ Se removió a {remove_id} de administradores.")
 
 # =============================================================================
+# NUEVO: Comandos para dar/quitar permiso de extraer link de Max
+# =============================================================================
+
+async def accessmax(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Uso: /accessmax <user_id> <días>
+    Si días <= 0 => acceso ilimitado.
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/accessmax con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 2:
+        await update.message.reply_text("Uso: /accessmax <user_id> <días>\n"
+                                        "Si <días> = 0 ó negativo, se otorga acceso ilimitado.")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El primer argumento debe ser un número (user_id).")
+        return
+
+    try:
+        days = int(context.args[1])
+    except ValueError:
+        await update.message.reply_text("El segundo argumento debe ser un número entero (días).")
+        return
+
+    link_dict = load_max_link_access()
+    if days <= 0:
+        link_dict[target_user_id] = None
+        save_max_link_access(link_dict)
+        await update.message.reply_text(
+            f"✅ Se otorgó acceso *ilimitado* para extraer enlaces de Max a {target_user_id}.",
+            parse_mode="Markdown"
+        )
+    else:
+        today = datetime.now().date()
+        new_exp = today + timedelta(days=days)
+        link_dict[target_user_id] = new_exp
+        save_max_link_access(link_dict)
+        await update.message.reply_text(
+            f"✅ Se otorgó acceso de extracción de enlaces de Max a {target_user_id} hasta {new_exp.isoformat()}.",
+            parse_mode="Markdown"
+        )
+
+async def removeaccessmax(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Uso: /removeaccessmax <user_id>
+    """
+    admin_user_id = update.effective_user.id
+    user_log(admin_user_id, f"/removeaccessmax con args: {context.args}")
+
+    if not is_admin(admin_user_id):
+        await update.message.reply_text("❌ No tienes permisos de administrador.")
+        return
+
+    if len(context.args) < 1:
+        await update.message.reply_text("Uso: /removeaccessmax <user_id>")
+        return
+
+    try:
+        target_user_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("El argumento debe ser un número (user_id).")
+        return
+
+    link_dict = load_max_link_access()
+    if target_user_id in link_dict:
+        del link_dict[target_user_id]
+        save_max_link_access(link_dict)
+        await update.message.reply_text(f"✅ Se ha revocado el permiso de extraer enlaces de Max para {target_user_id}.")
+    else:
+        await update.message.reply_text(f"⚠️ El usuario {target_user_id} no tenía permiso para extraer enlaces de Max.")
+
+# =============================================================================
 # 9. MAIN
 # =============================================================================
 
@@ -1540,8 +1818,6 @@ if __name__ == "__main__":
 
     # Handlers principales
     application.add_handler(CommandHandler("start", start))
-    # (Eliminados los comandos /help y /mi_perfil)
-
     application.add_handler(CallbackQueryHandler(handle_buttons))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, email_input))
     application.add_handler(CommandHandler("cancel", cancel))
@@ -1554,14 +1830,19 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("adduseremail", adduseremail))
     application.add_handler(CommandHandler("removeemail", removeemail))
     application.add_handler(CommandHandler("removeusertotal", removeusertotal))
+
     application.add_handler(CommandHandler("accessnetflixcode", accessnetflixcode))
     application.add_handler(CommandHandler("removenetflixcode", removenetflixcode))
     application.add_handler(CommandHandler("accessdisneycode", accessdisneycode))
     application.add_handler(CommandHandler("removedisneycode", removedisneycode))
+
+    # Nuevo: comandos para Max
+    application.add_handler(CommandHandler("accessmax", accessmax))
+    application.add_handler(CommandHandler("removeaccessmax", removeaccessmax))
+
     application.add_handler(CommandHandler("showuser", showuser))
     application.add_handler(CommandHandler("listusers", listusers))
     application.add_handler(CommandHandler("addadmin", addadmin))
     application.add_handler(CommandHandler("removeadmin", removeadmin))
 
-    # Ejecuta el bot
     application.run_polling()
