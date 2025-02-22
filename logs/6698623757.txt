@@ -22,3 +22,9 @@
 2025-02-17 00:12:29.485769: Seleccionó Disney+
 2025-02-17 00:12:31.392352: Ingresó correo 'disneycito23@dmarcial.com' para disney
 2025-02-17 00:12:32.081248: Código Disney: 438261
+2025-02-22 02:36:16.696646: /start
+2025-02-22 02:36:19.304893: Seleccionó Disney+
+2025-02-22 02:37:12.236946: /start
+2025-02-22 02:37:14.169082: Seleccionó Disney+
+2025-02-22 02:37:16.247036: Ingresó correo 'rey04@covnor.com' para disney
+2025-02-22 02:37:16.252629: Acceso denegado o expirado al correo
