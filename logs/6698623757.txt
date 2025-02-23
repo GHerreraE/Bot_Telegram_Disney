@@ -28,3 +28,34 @@
 2025-02-22 02:37:14.169082: Seleccionó Disney+
 2025-02-22 02:37:16.247036: Ingresó correo 'rey04@covnor.com' para disney
 2025-02-22 02:37:16.252629: Acceso denegado o expirado al correo
+2025-02-22 23:51:09.587515: /start
+2025-02-22 23:51:11.799701: Seleccionó Disney+
+2025-02-22 23:51:14.324845: Ingresó correo 'disneycito48@dmarcial.com' para disney
+2025-02-22 23:51:15.037164: Código Disney: 804254
+2025-02-22 23:53:53.033983: /start
+2025-02-22 23:53:54.604993: Seleccionó Disney+
+2025-02-22 23:53:55.738224: Ingresó correo 'disneycito49@dmarcial.com' para disney
+2025-02-22 23:53:56.437559: Código Disney: 618063
+2025-02-22 23:56:26.024755: /start
+2025-02-22 23:56:28.183766: Seleccionó Disney+
+2025-02-22 23:56:30.233042: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 23:56:30.949895: Código Disney: 759992
+2025-02-22 23:56:58.302427: /start
+2025-02-22 23:57:01.636690: Seleccionó Disney+
+2025-02-22 23:57:03.441646: Ingresó correo 'disneycito47@dmarcial.com' para disney
+2025-02-22 23:57:04.165187: Código Disney: 529901
+2025-02-22 23:59:11.994265: /start
+2025-02-22 23:59:15.167897: Seleccionó Disney+
+2025-02-22 23:59:17.277287: Ingresó correo 'disneycito50@dmarcial.com' para disney
+2025-02-22 23:59:38.487895: /start
+2025-02-22 23:59:40.448622: Seleccionó Disney+
+2025-02-22 23:59:42.538997: Ingresó correo 'disneycito50@dmarcial.com' para disney
+2025-02-22 23:59:43.179756: Código Disney: 925564
+2025-02-23 00:01:24.674606: /start
+2025-02-23 00:01:26.421201: Seleccionó Disney+
+2025-02-23 00:01:27.743581: Ingresó correo 'disneycito51@dmarcial.com' para disney
+2025-02-23 00:01:28.428107: Código Disney: 890873
+2025-02-23 00:01:43.630048: /start
+2025-02-23 00:01:45.803354: Seleccionó Disney+
+2025-02-23 00:01:47.117884: Ingresó correo 'disneycito51@dmarcial.com' para disney
+2025-02-23 00:01:47.754688: Código Disney: 116341
